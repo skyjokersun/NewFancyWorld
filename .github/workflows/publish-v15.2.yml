@@ -1,0 +1,34 @@
+name: Publish V15.2 source-only preview
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/RELEASE-v15.2.md'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && contains(github.event.head_commit.message, 'release: publish v15.2 source preview'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out tagged code
+        uses: actions/checkout@v4
+      - name: Publish source-only prerelease
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view v15.2 >/dev/null 2>&1; then
+            echo "v15.2 already exists; refusing to overwrite."
+            exit 0
+          fi
+          gh release create v15.2 \
+            --target "${GITHUB_SHA}" \
+            --title "NewFancyWorld V15.2 — Source-only Preview" \
+            --notes-file docs/RELEASE-v15.2.md \
+            --prerelease
