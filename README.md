@@ -36,9 +36,11 @@ This repository **does not include** the large `site.pak` bundle **or required g
 
 Avoid exposing the GM admin HTTP service directly to the internet. Do not enable development commands on a public server, and do not publish account save files, certificates or secrets.
 
-## Windows release
+## Releases
 
-The intended asset name is `SSS-Qiyu-V15.2-Win64.exe`. It is roughly 175 MiB and belongs in **GitHub Releases**, not Git history. **No GitHub Release is being claimed as published until the asset is actually uploaded and rights have been reviewed.** The binary uses an **SSS self-signed** signature; this is not a trusted CA signature.
+The `v15.2` release is planned as a **source-only preview** of the reviewed repository snapshot; it is not a runnable Windows game distribution. GitHub provides source ZIP and TAR archives automatically when the release is published. [Check the actual release status](https://github.com/skyjokersun/NewFancyWorld/releases).
+
+The separately prepared `SSS-Qiyu-V15.2-Win64.exe` is roughly 175 MiB and **has not been uploaded**, since it embeds archived game resources requiring redistribution-rights review. Its self-signed `CN=SSS` signature does not make it a trusted Windows publisher.
 
 See [v15.2 release notes](docs/RELEASE-v15.2.md) and [publishing instructions](docs/PUBLISHING.md).
 
