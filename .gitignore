@@ -1,18 +1,51 @@
-# Build and Release Folders
-bin-debug/
-bin-release/
-[Oo]bj/
-[Bb]in/
-
-# Other files and folders
-.settings/
-
-# Executables
-*.swf
-*.air
-*.ipa
-*.apk
-
-# Project files, i.e. `.project`, `.actionScriptProperties` and `.flexProperties`
-# should NOT be excluded as they contain compiler settings and other important
-# information for Eclipse / Flash Builder.
+# Qiyu V15.2 / NewFancyWorld
+# Player data / admin credentials / runtime state
+/var/
+**/var/
+/admin-password.txt
+**/admin-password.txt
+*.sqlite
+*.sqlite3
+*.db
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p8
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+*.kdbx
+secrets.*
+credentials.*
+# Dependencies and generated assets
+node_modules/
+**/node_modules/
+site.pak
+**/site.pak
+*.exe
+*.dll
+*.msi
+*.log
+*.tmp
+*.bak
+*.orig
+*.qiyu-install-tmp
+.launcher-version
+dist/
+out/
+build/
+coverage/
+*.zip
+*.rar
+*.7z
+# Editor & OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+__pycache__/
+*.py[cod]
