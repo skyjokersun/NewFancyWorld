@@ -44,6 +44,8 @@ See [v15.2 release notes](docs/RELEASE-v15.2.md) and [publishing instructions](d
 
 ## License, rights and attribution
 
-Please read [LICENSE](LICENSE) and [third-party asset review](docs/ASSET-AND-LICENSE-REVIEW.md). **No blanket open-source license has been granted to the entire game.** Original code, reverse-engineered data, images, sounds and archived client content can have different ownership. Public availability alone does not grant permission to reuse or redistribute those assets.
+**MIT licensed:** original server source code and associated original server-code documentation authored and owned by SSS may be used, modified, redistributed and used commercially, provided the copyright and MIT license notices are preserved. See [LICENSE](LICENSE).
+
+**Not MIT licensed by this repository:** original Qiyu client/game assets, music, art, maps, proprietary or reverse-engineered third-party data, third-party code, and other contributions not owned by SSS. Distribution of those materials is not authorized by the MIT license. See [asset and rights review](docs/ASSET-AND-LICENSE-REVIEW.md).
 
 **Maintainer:** SSS
