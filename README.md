@@ -2,24 +2,24 @@
 
 Community-maintained, independent compatibility implementation of the web-based Qiyu game. **Not affiliated with or endorsed by the original game's rights holders.**
 
-> **Repository setup in progress:** This public repository currently contains release documentation and publishing safeguards. The full source archive is prepared separately and must be reviewed for third-party content before being pushed. No public Windows installer has been released yet.
+> **Code published (partial V15.2 distribution):** The repository now contains 130 files of original server code, tests, launcher source and project support files. Client-derived maps/data, art, audio, `site.pak`, front-end patch bundles and the Windows installer are intentionally not published here. Five secondary build-helper files remain outside the repository. **This source-only checkout is not a complete, ready-to-play distribution.**
 
 ## What is V15.2?
 
 A Node.js WebSocket/HTTP game server and browser-based front-end integration with systems including combat, maps, items, crafting, shops, professions, social features, auto-hunt and GM administration. Feature completeness is not guaranteed.
 
-### Planned source layout
+### Published source layout
 
 | Path | Purpose |
 | --- | --- |
 | `src/` | Game server, accounts, combat, WebSocket, administration |
-| `data/` | Gameplay configuration; some source data requires rights review |
-| `site/patches/` | Browser-side compatibility patches |
-| `test/`, `tools/` | Tests and development tools |
+| `data/` | **Not published**: derived game datasets need rights review |
+| `site/patches/` | **Not published yet**: front-end patches need rights review |
+| `test/`, `tools/` | Tests and one build utility; five other build utilities pending |
 | `launcher/windows/` | Source code for Windows one-click launcher |
 | `docs/` | Publication, security and version notes |
 
-### Developer setup (after code is published)
+### Developer setup (source-only checkout)
 
 Node.js **18+** is required (Node.js 22 recommended).
 
@@ -27,7 +27,7 @@ Node.js **18+** is required (Node.js 22 recommended).
 npm ci
 ```
 
-The source package **does not include** the large `site.pak` bundle. A full web client also requires front-end assets that you are authorized to use. After these are provided, the recommended safe startup script is `scripts\start-public-safe.bat`.
+This repository **does not include** the large `site.pak` bundle **or required game datasets**. A full game needs both front-end assets and data you are authorized to use. After supplying these dependencies, the recommended safe startup script is `scripts\start-public-safe.bat`. The Windows launcher source also needs the separately prepared game payload for a complete EXE build.
 
 | Service | Port | Recommended binding |
 | --- | --- | --- |
