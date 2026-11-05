@@ -1,0 +1,985 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>奇域管理后台</title>
+<style>
+  :root { --bg:#f4f1ea; --panel:#fff; --line:#ddd5c4; --ink:#2b2418; --muted:#7a6f5c; --accent:#9a5b13; --ok:#2f7d32; --bad:#b3261e; }
+  * { box-sizing: border-box; }
+  [hidden] { display:none !important; }
+  body { margin:0; font:14px/1.5 "Microsoft YaHei","PingFang SC",sans-serif; background:var(--bg); color:var(--ink); }
+  header { display:flex; align-items:center; gap:16px; padding:12px 20px; background:#3a2c17; color:#f6e7c8; }
+  header h1 { font-size:18px; margin:0; font-weight:600; }
+  header .stat { color:#d9c49b; font-size:13px; }
+  header button { margin-left:auto; }
+  main { display:grid; grid-template-columns: minmax(320px, 420px) 1fr; gap:16px; padding:16px 20px; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:14px; }
+  input, select, button { font:inherit; }
+  input, select { padding:5px 8px; border:1px solid var(--line); border-radius:5px; background:#fff; color:var(--ink); width:100%; }
+  button { padding:5px 14px; border:1px solid var(--accent); background:var(--accent); color:#fff; border-radius:5px; cursor:pointer; }
+  button.ghost { background:#fff; color:var(--accent); }
+  button.danger { border-color:var(--bad); background:#fff; color:var(--bad); }
+  button:disabled { opacity:.5; cursor:default; }
+  a.btn { display:inline-block; padding:5px 14px; border:1px solid var(--accent); border-radius:5px; text-decoration:none; font-size:13px; }
+  a.btn.ghost { background:#fff; color:var(--accent); }
+  #search { margin-bottom:10px; }
+  .acc { border-top:1px solid var(--line); padding:8px 2px; }
+  .acc:first-child { border-top:0; }
+  .acc .email { font-weight:600; word-break:break-all; }
+  .acc .del-acc, .acc .imp-acc, .acc .exp-acc { float:right; padding:0 8px; margin-left:4px; font-size:12px; font-weight:400; }
+  .acc .meta { color:var(--muted); font-size:12px; }
+  .ch { display:flex; align-items:center; gap:8px; padding:5px 8px; margin-top:4px; border-radius:5px; cursor:pointer; }
+  .ch:hover { background:#f6efe0; }
+  .ch.sel { background:#efe0c2; }
+  .dot { width:8px; height:8px; border-radius:50%; background:#c9c0ae; flex:none; }
+  .dot.on { background:var(--ok); }
+  .tag { font-size:12px; padding:0 6px; border-radius:4px; background:#efe7d6; color:var(--muted); }
+  .chips { display:flex; flex-wrap:wrap; gap:4px; margin:0 0 8px; }
+  .chips button { padding:2px 9px; font-size:12px; background:#fff; color:var(--muted); border:1px solid var(--line); }
+  .chips button.on { background:#7a5a2a; color:#fff; border-color:#7a5a2a; }
+  .xlink { color:#7a5a2a; text-decoration:underline; cursor:pointer; }
+  .tag.bad { background:#f8dcd9; color:var(--bad); }
+  .empty { color:var(--muted); padding:30px 0; text-align:center; }
+  h2 { font-size:17px; margin:0 0 4px; }
+  .sub { color:var(--muted); margin-bottom:12px; }
+  .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap:10px 14px; }
+  label { display:block; font-size:12px; color:var(--muted); }
+  label span.now { float:right; color:var(--ink); }
+  .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:14px; }
+  .section { margin-top:18px; padding-top:12px; border-top:1px solid var(--line); }
+  .section h3 { font-size:14px; margin:0 0 8px; }
+  #msg { margin-top:10px; min-height:20px; }
+  #msg.ok { color:var(--ok); } #msg.bad { color:var(--bad); }
+  .items { color:var(--muted); font-size:13px; }
+  .bag { width:100%; border-collapse:collapse; font-size:13px; }
+  .bag td { padding:5px 6px; border-top:1px solid var(--line); vertical-align:middle; }
+  .bag td.attrs { color:var(--muted); }
+  .bag th { text-align:left; font-size:12px; color:var(--muted); font-weight:normal; padding:4px 6px; }
+  .bag td.ops { white-space:nowrap; text-align:right; }
+  .bag button { padding:2px 8px; font-size:12px; }
+  .give { display:grid; grid-template-columns: 2fr 90px 1fr 1fr auto; gap:8px; align-items:end; }
+  .give.give-item { grid-template-columns: 120px 2fr 90px 1fr 1fr auto; }
+  .bag .cnt { width:70px; padding:3px 5px; }
+  .pick { position:relative; }
+  .results { position:absolute; z-index:5; left:0; right:0; top:100%; max-height:260px; overflow:auto; background:#fff; border:1px solid var(--line); border-radius:5px; box-shadow:0 4px 14px rgba(0,0,0,.12); }
+  .results div { padding:4px 8px; cursor:pointer; }
+  .results div:hover { background:#f6efe0; }
+  .results small { color:var(--muted); }
+  .affixrow td { background:#faf6ec; }
+  @media (max-width: 760px) { .give { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 760px) { main { grid-template-columns: 1fr; } }
+  .tabs { display:flex; gap:4px; }
+  .tabs button { background:transparent; border-color:#7a6440; color:#d9c49b; }
+  .tabs button.on { background:#f6e7c8; color:#3a2c17; border-color:#f6e7c8; }
+  .wide { padding:16px 20px; display:grid; gap:16px; max-width:1100px; }
+  #spTable input { width:80px; } #spTable input.mod, .mf input.mod { border-color:var(--accent); background:#fff8ec; }
+  #settingsView { padding:16px 20px; display:grid; gap:16px; max-width:1100px; }
+  #sgroups { display:grid; gap:16px; }
+  .sgroup h3 { font-size:15px; margin:0 0 10px; }
+  .sgrid { display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:12px 16px; }
+  .sitem .hint { font-size:12px; color:var(--muted); margin-top:2px; }
+  .sitem .def { font-size:12px; color:var(--muted); cursor:pointer; text-decoration:underline dotted; }
+  .sitem.mod input, .sitem.mod select { border-color:var(--accent); background:#fff8ec; }
+  .sitem.dirty input, .sitem.dirty select { border-color:var(--ok); background:#eef8ee; }
+  .bar { position:sticky; top:0; z-index:4; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  #smsg, #bmsg, #pmsg, #spmsg, #mmsg, #gmsg { min-height:20px; } #smsg.ok, #bmsg.ok, #pmsg.ok, #spmsg.ok, #mmsg.ok, #gmsg.ok, #naMsg.ok { color:var(--ok); } #smsg.bad, #bmsg.bad, #pmsg.bad, #spmsg.bad, #mmsg.bad, #gmsg.bad, #naMsg.bad { color:var(--bad); }
+  .pool input.pr { width:110px; } .pool input.pr.mod { border-color:var(--accent); background:#fff8ec; }
+  .announce { display:flex; gap:8px; } .announce input { flex:1; }
+  .box { display:flex; align-items:center; gap:8px; padding:5px 8px; border-radius:5px; cursor:pointer; }
+  .box:hover { background:#f6efe0; } .box.sel { background:#efe0c2; }
+  .box .n { flex:1; }
+  .pool input.w { width:80px; }
+  /* Twelfth batch: long lists scroll inside their panel. */
+  #list, #boxList, #shopList, #monList, #mapList { max-height:calc(100vh - 230px); overflow:auto; }
+  #detail, #boxDetail, #shopDetail, #monDetail, #mapDetail { max-height:calc(100vh - 110px); overflow:auto; }
+</style>
+</head>
+<body>
+<header>
+  <h1>奇域管理后台</h1>
+  <div class="tabs"><button class="on" data-view="accounts">账号与角色</button><button data-view="settings">服务器设置</button><button data-view="boxes">盲盒内容</button><button data-view="shops">商人与商品</button><button data-view="spreads">职业属性</button><button data-view="monsters">怪物</button><button data-view="maps">地图怪物</button></div>
+  <span class="stat" id="stat"></span>
+  <button class="ghost" id="reload">刷新</button>
+  <button class="ghost" id="logout">退出登录</button>
+</header>
+<main>
+  <section class="panel">
+    <details id="newacc" style="margin-bottom:10px"><summary style="cursor:pointer;color:var(--accent)">新建账号（不用邮箱验证码）</summary>
+      <div class="row" style="margin-top:8px"><input id="naEmail" placeholder="邮箱" style="flex:2;width:auto"><input id="naPw" placeholder="密码（8 位以上）" style="flex:1;width:auto"><button id="naGo">创建</button></div>
+      <div class="items" id="naMsg"></div></details>
+    <div class="row" style="margin:0 0 10px"><button class="ghost" id="accImport">导入账号文件</button><span class="items">导入「导出账号」得到的文件：账号、下面所有角色和银行保险箱</span></div>
+    <input id="search" placeholder="搜索邮箱或角色名">
+    <div id="list"><div class="empty">加载中…</div></div>
+  </section>
+  <section class="panel" id="detail"><div class="empty">在左边选择一个角色</div></section>
+</main>
+<main id="boxView" hidden>
+  <section class="panel">
+    <input id="boxQ" placeholder="搜索盲盒" style="margin-bottom:10px">
+    <div id="boxList"><div class="empty">加载中…</div></div>
+  </section>
+  <section class="panel" id="boxDetail"><div class="empty">在左边选择一个盲盒</div></section>
+</main>
+<main id="shopView" hidden>
+  <section class="panel">
+    <input id="shopQ" placeholder="搜索商人或地图" style="margin-bottom:10px">
+    <div id="shopList"><div class="empty">加载中…</div></div>
+  </section>
+  <section class="panel" id="shopDetail"><div class="empty">在左边选择一个商人</div></section>
+</main>
+<div id="spreadView" class="wide" hidden>
+  <section class="panel bar"><button class="danger" id="spResetAll">全部恢复默认</button><span id="spmsg"></span></section>
+  <section class="panel"><table class="bag" id="spTable"></table>
+    <div class="items" style="margin-top:10px">每个职业的五项属性点数（力量、敏捷、感知、聪明、运气），角色的属性 = 这里的点数随职业等级成长。保存后所有在线和离线角色立即按新点数计算。橙色框 = 和默认值不同。</div></section>
+</div>
+<main id="monsterView" hidden>
+  <section class="panel">
+    <input id="monQ" placeholder="搜索怪物名字、编号或地图" style="margin-bottom:10px">
+    <div class="chips" id="monLv"></div><div class="chips" id="monCat"></div>
+    <label style="margin-bottom:10px">排序 <select id="monSort" style="width:auto"><option value="level">按等级</option><option value="name">按名字</option><option value="maps">按出现的地图数</option><option value="changed">修改过的在前</option></select></label>
+    <div class="row" style="margin:0 0 10px"><button class="danger" id="monResetAll">所有怪物和地图怪物恢复默认</button></div>
+    <div id="monList"><div class="empty">加载中…</div></div>
+  </section>
+  <section class="panel" id="monDetail"><div class="empty">在左边选择一个怪物</div></section>
+</main>
+<main id="mapView" hidden>
+  <section class="panel">
+    <input id="mapQ" placeholder="搜索地图编号、名字或怪物" style="margin-bottom:10px">
+    <div class="chips" id="mapCat"></div>
+    <label style="margin-bottom:10px"><input type="checkbox" id="mapAll" style="width:auto"> 也显示没有怪物的地图</label>
+    <div id="mapList"><div class="empty">加载中…</div></div>
+  </section>
+  <section class="panel" id="mapDetail"><div class="empty">在左边选择一张地图</div></section>
+</main>
+<div id="settingsView" hidden>
+  <section class="panel bar">
+    <button id="ssave">保存修改</button>
+    <button class="ghost" id="sundo">撤销未保存的修改</button>
+    <button class="ghost" id="sexport">导出当前配置</button>
+    <button class="ghost" id="simport">导入配置文件</button>
+    <input type="file" id="sfile" accept=".json,application/json" hidden>
+    <button class="danger" id="sreset">一键恢复默认</button>
+    <span id="smsg"></span>
+  </section>
+  <div id="sgroups"><div class="panel empty">加载中…</div></div>
+  <section class="panel">
+    <h3 style="margin:0 0 8px;font-size:15px">发送全服公告</h3>
+    <div class="announce"><input id="atext" maxlength="200" placeholder="发给所有在线玩家的系统消息，例如：今晚 10 点停服维护"><button id="asend">发送</button></div>
+  </section>
+  <section class="panel">
+    <h3 style="margin:0 0 8px;font-size:15px">重启服务器</h3>
+    <div class="announce" style="align-items:center"><span>倒计时</span><input id="rsec" type="number" min="0" max="3600" style="flex:0 0 90px"><span>秒（0 = 立刻）</span>
+      <button class="danger" id="rgo">重启服务器</button><button class="ghost" id="rcancel" hidden>取消重启</button><span id="rmsg"></span></div>
+    <div style="font-size:12px;opacity:.75;margin-top:6px">先给全服发公告，倒计时结束后存档并重启，玩家的游戏会自动重新连接。默认秒数在上面「其他 → 重启倒计时」里改。Windows 要用新的 start.bat 启动才会自动重新开起来；Docker 设了 restart: unless-stopped 会自动拉起。</div>
+  </section>
+  <section class="panel items">
+    改动立即生效，并保存在服务端的 var/state.json 里，重启后还在。导出的配置文件也包含「盲盒内容」页面的修改，「一键恢复默认」会把盲盒内容一起恢复。橙色框 = 和默认值不同；绿色框 = 改了还没保存。
+    「默认」是 config.js 里的值（如果启动时设了 QIYU_ 环境变量，就是环境变量的值）；这里保存的设置会覆盖环境变量。
+    怪物血量、攻击只对之后新刷出的怪生效；怪物数量修改后立即补怪或减少待刷新的怪。
+  </section>
+</div>
+<div id="modal" hidden style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;display:grid;place-items:center">
+  <div class="panel" style="width:420px;max-width:calc(100vw - 32px)"><h3 id="mTitle" style="margin:0 0 8px"></h3><div id="mBody" class="items"></div>
+    <div class="row" id="mBtns"></div></div>
+</div>
+<script>
+(function () {
+  var meta = { professions: [] }, accounts = [], selected = null, itemCat = [], itemCats = [], affixes = { prefixes: [], suffixes: [] };
+  var $ = function (id) { return document.getElementById(id); };
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function when(t) { return t ? new Date(t).toLocaleString() : '—'; }
+  function api(path, body) {
+    return fetch('/api/' + path, body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {})
+      .then(function (r) { return r.json().then(function (j) { if (r.status === 401 && j.login) location.reload(); if (!r.ok) throw new Error(j.error || r.status); return j; }); });
+  }
+  $('logout').onclick = function () { api('logout', {}).then(function () { location.reload(); }); };
+
+  function loadAll() {
+    return Promise.all([api('meta'), api('accounts'), itemCat.length ? null : api('items'), itemCat.length ? null : api('affixes')]).then(function (r) {
+      meta = r[0]; accounts = r[1].accounts;
+      if (r[2]) { itemCat = r[2].items; itemCats = r[2].categories || []; }
+      if (r[3]) affixes = r[3];
+      var chars = accounts.reduce(function (n, a) { return n + a.characters.length; }, 0);
+      $('stat').textContent = accounts.length + ' 个账号 · ' + chars + ' 个角色 · ' + meta.online + ' 人在线';
+      renderList();
+      if (selected) openChar(selected, true);
+    }).catch(function (e) { $('list').innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; });
+  }
+
+  function renderList() {
+    var q = $('search').value.trim().toLowerCase();
+    var html = accounts.filter(function (a) {
+      return !q || a.email.toLowerCase().indexOf(q) >= 0 || a.characters.some(function (c) { return c.name.toLowerCase().indexOf(q) >= 0; });
+    }).map(function (a) {
+      return '<div class="acc"><div class="email"><button class="danger del-acc" data-acc="' + a.id + '" title="删除账号">删除</button><button class="ghost imp-acc" data-acc="' + a.id + '" title="把导出的角色文件导入成这个账号的新角色">导入角色</button><a class="btn ghost exp-acc" href="/api/account/' + encodeURIComponent(a.id) + '/export" download title="账号、所有角色和银行保险箱导出成一个文件">导出账号</a>' + esc(a.email) + (a.banned ? ' <span class="tag bad">已封禁</span>' : '') + '</div>' +
+        '<div class="meta">注册 ' + when(a.createdAt) + ' · 最近登录 ' + when(a.lastLoginAt) + '</div>' +
+        (a.characters.length ? a.characters.map(function (c) {
+          return '<div class="ch' + (c.id === selected ? ' sel' : '') + '" data-id="' + c.id + '"><span class="dot' + (c.online ? ' on' : '') + '"></span>' +
+            '<b>' + esc(c.name) + '</b><span class="tag">' + esc(c.professionName) + '</span><span class="tag">战斗 ' + c.combatLevel + '</span><span class="tag">职业 ' + c.professionLevel + '</span></div>';
+        }).join('') : '<div class="meta">还没有创建角色</div>') + '</div>';
+    }).join('');
+    $('list').innerHTML = html || '<div class="empty">没有找到</div>';
+  }
+
+  // Character files: export downloads one; import reads one picked on this computer.
+  function pickCharacterFile(then) {
+    var input = document.createElement('input');
+    input.type = 'file'; input.accept = '.json,application/json';
+    input.onchange = function () {
+      var f = input.files && input.files[0]; if (!f) return;
+      f.text().then(function (t) {
+        var file; try { file = JSON.parse(t); } catch (e) { return alert('不是有效的 JSON 文件'); }
+        if (!file || file.format !== 'qiyu-character') return alert('文件格式不对：请选择从这里「导出角色」得到的文件');
+        then(file);
+      });
+    };
+    input.click();
+  }
+  function importNew(acc) {
+    pickCharacterFile(function (file) {
+      var free = (meta.worlds || []).filter(function (w) { return !acc.characters.some(function (c) { return c.world === w; }); });
+      if (!free.length) return alert('这个账号在每个区服都有角色了。要覆盖已有角色，请打开那个角色，用「导入覆盖」。');
+      var world = prompt('导入到哪个区服？可选：' + free.join('、'), free.indexOf(meta.defaultWorld) >= 0 ? meta.defaultWorld : free[0]);
+      if (!world) return;
+      var name = prompt('新角色的名字（同一区服里不能重名）', file.name || (file.character && file.character.name) || '');
+      if (!name) return;
+      api('account/' + acc.id + '/import', { file: file, world: world.trim(), name: name.trim() }).then(function (r) {
+        alert(r.done.join('\n')); selected = r.id; loadAll();
+      }).catch(function (e) { alert(e.message); });
+    });
+  }
+
+  // A small dialog with choice buttons: [{ text, cls, fn }].
+  function modal(title, body, buttons) {
+    $('mTitle').textContent = title; $('mBody').innerHTML = body; $('mBtns').innerHTML = '';
+    buttons.forEach(function (b) {
+      var el = document.createElement('button'); el.textContent = b.text; if (b.cls) el.className = b.cls;
+      el.onclick = function () { $('modal').hidden = true; if (b.fn) b.fn(); };
+      $('mBtns').appendChild(el);
+    });
+    $('modal').hidden = false;
+  }
+  function importAccountFile() {
+    var input = document.createElement('input');
+    input.type = 'file'; input.accept = '.json,application/json';
+    input.onchange = function () {
+      var f = input.files && input.files[0]; if (!f) return;
+      f.text().then(function (t) {
+        var file; try { file = JSON.parse(t); } catch (e) { return alert('不是有效的 JSON 文件'); }
+        if (!file || file.format !== 'qiyu-account') return alert('文件格式不对：请选择从这里「导出账号」得到的文件');
+        var go = function (mode, email) {
+          api('accounts/import', { file: file, mode: mode, email: email }).then(function (r) { alert(r.done.join('\n')); loadAll(); }).catch(function (e) { alert(e.message); });
+        };
+        api('accounts/import', { file: file, mode: 'check' }).then(function (r) {
+          var who = esc(r.email) + (r.characters.length ? '（角色：' + esc(r.characters.join('、')) + '）' : '');
+          if (!r.exists) return modal('导入账号', '导入账号 ' + who + '？', [{ text: '导入', fn: function () { go('new'); } }, { text: '取消', cls: 'ghost' }]);
+          modal('账号已存在', '邮箱 ' + esc(r.email) + ' 已经有账号了。要怎么处理？<br><br><b>覆盖</b>：删除现有账号和它的全部角色、保险箱，换成文件里的。<br><b>跳过</b>：什么都不改。<br><b>用新邮箱导入</b>：文件里的账号换一个邮箱另存一份。', [
+            { text: '覆盖', cls: 'danger', fn: function () { go('overwrite'); } },
+            { text: '跳过', cls: 'ghost', fn: function () { go('skip'); } },
+            { text: '用新邮箱导入', fn: function () { var e = prompt('新的邮箱地址'); if (e) go('rename', e.trim()); } },
+          ]);
+        }).catch(function (e) { alert(e.message); });
+      });
+    };
+    input.click();
+  }
+  $('accImport').onclick = importAccountFile;
+
+  function deleteAccount(acc) {
+    var names = acc.characters.map(function (c) { return c.name; }).join('、');
+    if (!confirm('永久删除账号 ' + acc.email + (names ? '，以及角色：' + names : '') + '？\n\n删除后无法恢复，角色的背包、装备、保险箱、果园都会一起删除。在线的角色会被踢下线。这个邮箱以后可以重新注册。')) return;
+    api('account/' + acc.id + '/delete', {}).then(function (r) {
+      if (acc.characters.some(function (c) { return c.id === selected; })) { selected = null; $('detail').innerHTML = '<div class="empty">' + esc(r.done.join('')) + '</div>'; }
+      loadAll();
+    }).catch(function (e) { alert(e.message); });
+  }
+
+  $('list').addEventListener('click', function (e) {
+    var imp = e.target.closest('.imp-acc');
+    if (imp) { var ia = accounts.find(function (x) { return x.id === imp.getAttribute('data-acc'); }); if (ia) importNew(ia); return; }
+    var del = e.target.closest('.del-acc');
+    if (del) { var a = accounts.find(function (x) { return x.id === del.getAttribute('data-acc'); }); if (a) deleteAccount(a); return; }
+    var el = e.target.closest('.ch'); if (!el) return;
+    selected = el.getAttribute('data-id'); renderList(); openChar(selected);
+  });
+  $('search').addEventListener('input', renderList);
+  $('reload').addEventListener('click', function () {
+    if (!$('settingsView').hidden) loadSettings(); else if (!$('boxView').hidden) loadBoxes(); else if (!$('shopView').hidden) loadShops();
+    else if (!$('spreadView').hidden) loadSpreads(); else if (!$('monsterView').hidden) loadMonsters(); else if (!$('mapView').hidden) loadMaps(); else loadAll();
+  });
+  $('naGo').onclick = function () {
+    var m = $('naMsg');
+    api('accounts/create', { email: $('naEmail').value.trim(), password: $('naPw').value }).then(function (r) {
+      m.textContent = r.done.join('') + '。玩家可以用这个邮箱和密码直接登录，进游戏后自己建角色。'; m.className = 'ok';
+      $('naEmail').value = ''; $('naPw').value = ''; accounts = r.accounts; renderList();
+    }).catch(function (e) { m.textContent = e.message; m.className = 'bad'; });
+  };
+
+  var CS_NAMES = { ranged_weapon: '远程武器', melee_weapon: '近身武器', mechanics: '机械', magic: '魔法', quick_heal: '快速愈合', judgement: '判断力' };
+  var CORE_NAMES = { strength: '力量', agility: '敏捷', perception: '感知', intelligence: '聪明', luck: '运气' };
+  function statsLine(st) {
+    if (!st) return '—';
+    var core = Object.keys(CORE_NAMES).map(function (k) { return CORE_NAMES[k] + ' ' + ((st.core || {})[k] || 0); }).join('，');
+    return core + '<br>生命 ' + st.maxHp + '，体力 ' + st.maxStamina + '，攻击 ' + st.attack + '，破坏 ' + st.breakPower + '，防御 ' + st.defense +
+      '，负重 ' + st.maxWeight + '，移动速度 ' + st.moveSpeed + '，攻速 ×' + st.attackSpeed + '，攻击距离 ' + st.attackRange;
+  }
+  function field(key, label, value, now) {
+    return '<label>' + label + (now !== undefined ? '<span class="now">当前 ' + esc(now) + '</span>' : '') + '<input data-key="' + key + '" value="' + esc(value) + '" inputmode="numeric"></label>';
+  }
+
+  function openChar(id, keepMsg) {
+    api('character/' + id).then(function (c) {
+      var acc = accounts.find(function (a) { return a.characters.some(function (x) { return x.id === id; }); }) || {};
+      var profs = meta.professions.map(function (p) { return '<option value="' + p.id + '"' + (p.id === c.profession ? ' selected' : '') + '>' + esc(p.name) + '</option>'; }).join('');
+      var levels = Object.keys(c.professionLevels).map(function (k) {
+        var p = meta.professions.find(function (x) { return x.id === k; }); return (p ? p.name : k) + ' ' + c.professionLevels[k] + ' 级';
+      }).join('，');
+      var msg = keepMsg ? $('msg') && $('msg').outerHTML : '';
+      $('detail').innerHTML =
+        '<h2>' + esc(c.name) + ' <span class="tag">' + (c.online ? '在线 · ' + esc(c.mapRef) : '离线') + '</span></h2>' +
+        '<div class="sub">' + esc(acc.email || '') + ' · 区服 ' + esc(c.world) + ' · 角色 ' + esc(c.id) + ' · 游戏时长 ' + Math.round(c.playSeconds / 60) + ' 分钟</div>' +
+        '<div class="grid">' +
+          '<label>职业<select data-key="profession">' + profs + '</select></label>' +
+          field('combatLevel', '战斗等级', c.combatLevel, c.combatLevel) +
+          field('professionLevel', '职业等级（当前职业）', c.professionLevel, c.professionLevel) +
+          field('combatExp', '战斗经验', c.combatExp, c.combatExp) +
+          field('professionExp', '职业经验（当前职业）', c.professionExp, c.professionExp) +
+          field('communityExp', '社区经验', c.communityExp, c.communityExp) +
+          field('gold', '金钱', c.gold, c.gold) +
+          field('skillPoints', '技能点', c.skillPoints, c.skillPoints) +
+          '<label>名字（离线时才能改）<input data-key="name" value="' + esc(c.name) + '"' + (c.online ? ' disabled' : '') + '></label>' +
+          '<label>战斗等级锁定<select data-key="combatLevelLock"><option value="">不锁定（自动升级）</option><option value="1"' + (c.combatLevelLock ? ' selected' : '') + '>锁定' + (c.combatLevelLock ? '（' + c.combatLevelLock + ' 级）' : '') + '</option></select></label>' +
+        '</div>' +
+        '<div class="section"><h3>战斗技能 <span class="tag" id="csSum">已用 ' + c.spentSkillPoints + ' / ' + c.skillPointCap + '</span> <small class="items">每项最多 200 点，合计最多 ' + c.skillPointCap + ' 点；剩余技能点在上面单独改</small></h3><div class="grid">' +
+          Object.keys(CS_NAMES).map(function (k) { return '<label>' + CS_NAMES[k] + '<span class="now">当前 ' + (c.combatSkills[k] || 0) + '</span><input data-cs="' + k + '" value="' + (c.combatSkills[k] || 0) + '" inputmode="numeric"></label>'; }).join('') +
+        '</div></div>' +
+        (c.craft ? '<div class="section"><h3>工匠熟练度 <small class="items">填等级 1–100，保存后经验变成该等级的起点；称号随等级变化</small></h3><div class="grid">' +
+          Object.keys(c.craft).map(function (k) { var r = c.craft[k]; return '<label>' + esc(r.name) + '<span class="now">' + r.level + ' 级 ' + esc(r.title) + ' · ' + r.totalExp + (r.nextLevelTotalExp ? '/' + r.nextLevelTotalExp : '') + '</span><input data-craft="' + k + '" value="' + r.level + '" inputmode="numeric"></label>'; }).join('') +
+        '</div></div>' : '') +
+        '<div class="section"><h3>坐骑</h3><div class="grid">' +
+          '<label>筋斗云剩余天数（0 = 收回）<span class="now">' + (c.cloudUntil > Date.now() ? '到期 ' + esc(when(c.cloudUntil)) : '没有') + '</span><input data-key="cloudDays" value="' + (c.cloudUntil > Date.now() ? Math.round((c.cloudUntil - Date.now()) / 864e5 * 10) / 10 : 0) + '" inputmode="decimal"></label>' +
+          '<div class="items" style="align-self:end">正在骑：' + ({ cloud: '筋斗云', carpet: '飞毯' }[c.riding] || '没有') + '</div>' +
+        '</div></div>' +
+        '<div class="section"><h3>当前属性 <small class="items">（含装备、技能和坐骑加成；在线时是游戏里的实时数值）</small></h3><div class="items">' + statsLine(c.stats) + '</div></div>' +
+        '<div class="row"><button id="save">保存修改</button><button class="ghost" id="revert">还原</button>' + (c.online ? '<button class="danger" id="kick">踢下线</button>' : '') +
+          '<a class="btn ghost" id="cexport" href="/api/character/' + encodeURIComponent(id) + '/export" download>导出角色</a><button class="ghost" id="cimport">导入覆盖</button></div>' +
+        (msg || '<div id="msg"></div>') +
+        '<div class="section"><h3>其他职业等级</h3><div class="items">' + (esc(levels) || '—') + '</div></div>' +
+        '<div class="section"><h3>身上的装备</h3><div class="items">' + (c.equipment.map(function (e) { return esc(e.name); }).join('，') || '—') + '</div></div>' +
+        '<div class="section"><h3>发放物品</h3><div class="give give-item">' +
+          '<label>分类<select id="giveC"><option value="">全部分类</option>' + itemCats.map(function (k) { return '<option>' + esc(k) + '</option>'; }).join('') + '</select></label>' +
+          '<label class="pick">物品（点开挑选，或输入名字、编号搜索）<input id="giveQ" autocomplete="off" placeholder="点这里挑选，例如：短弓、急救药、577"><div class="results" id="giveR" hidden></div></label>' +
+          '<label>数量<input id="giveN" value="1" inputmode="numeric"></label>' +
+          '<label>前缀（只限装备）<select id="giveP" disabled>' + affixOptions('prefixes') + '</select></label>' +
+          '<label>后缀（只限装备）<select id="giveS" disabled>' + affixOptions('suffixes') + '</select></label>' +
+          '<button id="give" disabled>放入背包</button></div><div class="items" id="giveInfo" style="margin-top:6px"></div></div>' +
+        '<div class="section"><h3>背包（' + c.inventory.length + ' / 40 格）</h3>' + bagTable(c) + '</div>' +
+        '<div class="section"><h3>账号</h3><div class="row" style="margin-top:0">' +
+          '<label style="flex:0 0 auto">服务点（同账号所有角色共用：银行保险箱、战神祝福、筋斗云）' + (acc.pointsGranted ? '' : '<span class="items">（还没领过初始点数）</span>') + '<input id="spts" value="' + acc.servicePoints + '" inputmode="numeric" style="max-width:160px"></label>' +
+          '<button class="ghost" id="setpts" style="align-self:end">保存服务点</button></div><div class="row">' +
+          '<input id="pw" type="text" placeholder="新密码（8 位以上）" style="max-width:220px"><button class="ghost" id="setpw">重置密码</button>' +
+          '<button class="danger" id="ban">' + (acc.banned ? '解除封禁' : '封禁账号') + '</button><button class="danger" id="delacc">删除账号</button></div></div>';
+
+      wireItems(id, c);
+      var orig = {}; Array.prototype.forEach.call($('detail').querySelectorAll('[data-key]'), function (el) { orig[el.getAttribute('data-key')] = el.value; });
+      $('revert').onclick = function () { openChar(id); };
+      $('save').onclick = function () {
+        var body = {};
+        Array.prototype.forEach.call($('detail').querySelectorAll('[data-key]'), function (el) {
+          var k = el.getAttribute('data-key'); if (el.value === orig[k]) return;
+          if (k === 'profession' || k === 'name') body[k] = el.value;
+          else if (k === 'combatLevelLock') body[k] = el.value === '1';
+          else body[k] = Number(el.value.replace(/[,\s]/g, ''));
+        });
+        var cs = {}, csChanged = false;
+        Array.prototype.forEach.call($('detail').querySelectorAll('[data-cs]'), function (el) {
+          var k = el.getAttribute('data-cs'); cs[k] = Number(el.value.replace(/[,\s]/g, '')) || 0;
+          if (cs[k] !== (c.combatSkills[k] || 0)) csChanged = true;
+        });
+        if (csChanged) body.combatSkills = cs;
+        var cl = {}, clChanged = false;
+        Array.prototype.forEach.call($('detail').querySelectorAll('[data-craft]'), function (el) {
+          var k = el.getAttribute('data-craft'), v = Number(el.value.replace(/[,\s]/g, '')) || 1;
+          if (v !== c.craft[k].level) { cl[k] = v; clChanged = true; }
+        });
+        if (clChanged) body.craftLevels = cl;
+        if (!Object.keys(body).length) return say('没有改动', true);
+        // A level wins over the exp box of the same kind when both changed.
+        if ('combatLevel' in body) delete body.combatExp;
+        if ('professionLevel' in body) delete body.professionExp;
+        if ('profession' in body) { delete body.professionLevel; delete body.professionExp; }
+        api('character/' + id, body).then(function (r) { say('已保存：' + r.done.join('，') + (c.online ? '（游戏里已生效）' : '')); refresh(); }).catch(function (e) { say(e.message, false); });
+      };
+      $('cimport').onclick = function () {
+        pickCharacterFile(function (file) {
+          var from = file.name || (file.character && file.character.name) || '文件里的角色';
+          if (!confirm('用「' + from + '」的数据覆盖角色 ' + c.name + '？\n\n背包、装备、等级、技能、金钱、造型都会换成文件里的，名字、账号和区服不变。覆盖后无法撤销，建议先导出备份。' + (c.online ? '\n这个角色在线，会先被踢下线。' : ''))) return;
+          api('character/' + id + '/import', { format: file.format, version: file.version, name: file.name, character: file.character }).then(function (r) { say(r.done.join('，')); refresh(); }).catch(function (e) { say(e.message, false); });
+        });
+      };
+      if ($('kick')) $('kick').onclick = function () { api('character/' + id + '/kick', {}).then(function (r) { say(r.done.join('')); refresh(); }); };
+      $('setpw').onclick = function () { api('account/' + acc.id, { password: $('pw').value }).then(function (r) { say(r.done.join('')); }).catch(function (e) { say(e.message, false); }); };
+      $('delacc').onclick = function () { deleteAccount(acc); };
+      $('setpts').onclick = function () { api('account/' + acc.id, { servicePoints: Number($('spts').value) }).then(function (r) { say(r.done.join('')); refresh(); }).catch(function (e) { say(e.message, false); }); };
+      $('ban').onclick = function () {
+        if (!acc.banned && !confirm('封禁 ' + acc.email + '？封禁后不能登录，在线的角色会被踢下线。')) return;
+        api('account/' + acc.id, { banned: !acc.banned }).then(function (r) { say(r.done.join('')); refresh(); }).catch(function (e) { say(e.message, false); });
+      };
+    }).catch(function (e) { $('detail').innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; });
+  }
+
+  function refresh() { loadAll(); }
+
+  function affixOptions(kind, current) {
+    var none = kind === 'prefixes' ? '无前缀' : '无后缀';
+    return '<option value="">' + none + '</option>' + affixes[kind].map(function (a) {
+      return '<option value="' + a.itemId + '">' + esc(a.name) + ' ' + (a.grade + 1) + '级（' + esc(a.attrs.join('，')) + '）</option>';
+    }).join('');
+  }
+
+  function bagTable(c) {
+    if (!c.inventory.length) return '<div class="items">空</div>';
+    return '<table class="bag">' + c.inventory.map(function (it) {
+      return '<tr data-i="' + it.index + '"><td><b>' + esc(it.name) + '</b>' + (it.count > 1 ? ' ×' + it.count : '') + '</td>' +
+        '<td class="attrs">' + esc(it.attrs.join('，')) + '</td><td class="ops">' +
+        (it.slot ? '<button class="ghost" data-op="affix">改前后缀</button> ' : '') +
+        (it.slot ? '' : '<input class="cnt" value="' + (it.count || 1) + '" inputmode="numeric"> <button class="ghost" data-op="count">改数量</button> ') +
+        '<button class="danger" data-op="del">删除</button></td></tr>';
+    }).join('') + '</table>';
+  }
+
+  function wireItems(id, c) {
+    var picked = null;
+    var q = $('giveQ'), box = $('giveR');
+    function choose(t) {
+      picked = t; q.value = t.name + '（' + t.itemId + '）'; box.hidden = true;
+      $('giveP').disabled = $('giveS').disabled = !t.slot;
+      if (!t.slot) { $('giveP').value = ''; $('giveS').value = ''; }
+      $('give').disabled = false;
+      $('giveInfo').textContent = (t.slotName ? t.slotName + ' · ' : '可叠加 · ') + (t.level ? '需要 ' + t.level + ' 级 · ' : '') + (t.attrs.join('，') || '无属性');
+    }
+    // Lists the chosen category (all of it when nothing is typed), narrowed by the search text.
+    function showList() {
+      var c = $('giveC').value;
+      var k = picked ? '' : q.value.trim().toLowerCase();
+      var hits = itemCat.filter(function (t) {
+        return (!c || t.category === c) && (!k || t.name.toLowerCase().indexOf(k) >= 0 || String(t.itemId) === k);
+      });
+      var more = hits.length > 300 ? hits.length - 300 : 0;
+      hits = hits.slice(0, 300);
+      box.innerHTML = hits.map(function (t, i) {
+        return '<div data-k="' + i + '">' + esc(t.name) + ' <small>' + t.itemId + ' · ' + esc(t.category || '') + (t.level ? ' · ' + t.level + '级' : '') + '</small></div>';
+      }).join('') + (more ? '<div><small>还有 ' + more + ' 件，换个分类或输入名字缩小范围</small></div>' : '') || '<div><small>没有找到</small></div>';
+      box.hidden = false;
+      box.onclick = function (e) { var d = e.target.closest('[data-k]'); if (d) choose(hits[+d.getAttribute('data-k')]); };
+    }
+    q.addEventListener('input', function () { picked = null; $('give').disabled = true; showList(); });
+    q.addEventListener('focus', function () { if (picked) q.select(); showList(); });
+    q.addEventListener('click', showList);
+    $('giveC').addEventListener('change', function () { picked = null; q.value = ''; $('give').disabled = true; showList(); q.focus(); });
+    if (!window.__giveClose) {
+      window.__giveClose = true;
+      document.addEventListener('mousedown', function (e) { var r = $('giveR'); if (r && !r.hidden && !e.target.closest('.pick') && e.target !== $('giveC')) r.hidden = true; });
+    }
+    $('give').onclick = function () {
+      if (!picked) return;
+      api('character/' + id + '/items', { action: 'add', itemId: picked.itemId, count: Number($('giveN').value), prefixItemId: $('giveP').value ? Number($('giveP').value) : null, suffixItemId: $('giveS').value ? Number($('giveS').value) : null })
+        .then(function (r) { say(r.done.join('，')); openChar(id, true); }).catch(function (e) { say(e.message, false); });
+    };
+    var table = $('detail').querySelector('.bag');
+    if (!table) return;
+    table.addEventListener('click', function (e) {
+      var b = e.target.closest('button'); if (!b) return;
+      var tr = b.closest('tr[data-i]'); if (!tr) return; var index = Number(tr.getAttribute('data-i'));
+      var it = c.inventory.find(function (x) { return x.index === index; });
+      var op = b.getAttribute('data-op');
+      if (op === 'count') {
+        var n = Number(tr.querySelector('.cnt').value.replace(/[,\s]/g, ''));
+        return api('character/' + id + '/items', { action: 'count', index: index, count: n })
+          .then(function (r) { say(r.done.join('，')); openChar(id, true); }).catch(function (e) { say(e.message, false); });
+      }
+      if (op === 'del' || op === 'less') {
+        if (op === 'del' && !confirm('删除 ' + it.name + (it.count > 1 ? ' ×' + it.count : '') + '？')) return;
+        return api('character/' + id + '/items', { action: 'remove', index: index, count: op === 'less' ? 1 : undefined })
+          .then(function (r) { say(r.done.join('，')); openChar(id, true); }).catch(function (e) { say(e.message, false); });
+      }
+      if (op === 'affix') {
+        var open = table.querySelector('.affixrow'); if (open) open.remove();
+        var row = document.createElement('tr'); row.className = 'affixrow';
+        row.innerHTML = '<td colspan="3"><div class="give" style="grid-template-columns:1fr 1fr auto auto">' +
+          '<label>前缀<select class="ap">' + affixOptions('prefixes') + '</select></label>' +
+          '<label>后缀<select class="as">' + affixOptions('suffixes') + '</select></label>' +
+          '<button class="ok">确定</button><button class="ghost cancel">取消</button></div></td>';
+        tr.after(row);
+        var pre = affixes.prefixes.find(function (a) { return a.itemId === it.prefixItemId; }) || affixes.prefixes.find(function (a) { return a.name === it.prefix; });
+        var suf = affixes.suffixes.find(function (a) { return a.itemId === it.suffixItemId; }) || affixes.suffixes.find(function (a) { return a.name === it.suffix; });
+        if (pre) row.querySelector('.ap').value = pre.itemId;
+        if (suf) row.querySelector('.as').value = suf.itemId;
+        row.querySelector('.cancel').onclick = function () { row.remove(); };
+        row.querySelector('.ok').onclick = function () {
+          var ap = row.querySelector('.ap').value, as = row.querySelector('.as').value;
+          api('character/' + id + '/items', { action: 'affix', index: index, prefixItemId: ap ? Number(ap) : null, suffixItemId: as ? Number(as) : null })
+            .then(function (r) { say(r.done.join('，')); openChar(id, true); }).catch(function (e) { say(e.message, false); });
+        };
+      }
+    });
+  }
+  function say(text, ok) { var m = $('msg'); if (!m) return; m.textContent = text; m.className = ok === false ? 'bad' : 'ok'; }
+
+  loadAll();
+
+  // ---------- server settings ----------
+  var settings = null;
+  function smsg(text, ok) { var m = $('smsg'); m.textContent = text; m.className = ok === false ? 'bad' : 'ok'; }
+  function fmt(v) { return v == null ? '' : String(v); }
+  function renderSettings() {
+    $('sgroups').innerHTML = settings.groups.map(function (g) {
+      return '<section class="panel sgroup"><h3>' + esc(g.title) + '</h3><div class="sgrid">' + g.items.map(function (it) {
+        var mod = fmt(it.value) !== fmt(it.default);
+        return '<div class="sitem' + (mod ? ' mod' : '') + '" data-key="' + it.key + '"><label>' + esc(it.label) +
+          ' <span class="now"><span class="def" title="点击填入默认值">默认 ' + esc(it.type === 'bool' ? (it.default ? '开' : '关') : it.default) + '</span></span></label>' +
+          (it.type === 'bool'
+            ? '<select data-orig="' + it.value + '"><option value="true"' + (it.value ? ' selected' : '') + '>开</option><option value="false"' + (it.value ? '' : ' selected') + '>关</option></select>'
+            : '<input ' + (it.type === 'str' ? 'type="text" maxlength="' + it.maxLen + '"' : 'type="number" step="' + (it.type === 'int' ? '1' : 'any') + '" min="' + it.min + '" max="' + it.max + '"') +
+              ' value="' + esc(it.value) + '" data-orig="' + esc(it.value) + '">') +
+          (it.hint ? '<div class="hint">' + esc(it.hint) + '</div>' : '') + '</div>';
+      }).join('') + '</div></section>';
+    }).join('');
+  }
+  function pending() {
+    var out = {};
+    document.querySelectorAll('#sgroups .sitem').forEach(function (el) {
+      var inp = el.querySelector('input, select');
+      if (inp.value !== inp.dataset.orig) out[el.dataset.key] = inp.value;
+    });
+    return out;
+  }
+  function loadSettings() { return api('settings').then(function (r) { settings = r; renderSettings(); }).catch(function (e) { smsg(e.message, false); }); }
+  function afterSave(r, prefix) {
+    settings = r.settings; renderSettings();
+    var t = r.done.length ? prefix + '：' + r.done.join('、') : '没有变化';
+    if (r.skipped && r.skipped.length) t += '（文件里有 ' + r.skipped.length + ' 项这个版本不认识，已跳过：' + r.skipped.join('、') + '）';
+    smsg(t);
+  }
+  $('sgroups').addEventListener('input', function (e) {
+    var el = e.target.closest('.sitem'); if (el) el.classList.toggle('dirty', e.target.value !== e.target.dataset.orig);
+  });
+  $('sgroups').addEventListener('click', function (e) {
+    if (!e.target.classList.contains('def')) return;
+    var el = e.target.closest('.sitem'), it = null;
+    settings.groups.forEach(function (g) { g.items.forEach(function (x) { if (x.key === el.dataset.key) it = x; }); });
+    var inp = el.querySelector('input, select'); inp.value = String(it.default); el.classList.toggle('dirty', inp.value !== inp.dataset.orig);
+  });
+  $('ssave').onclick = function () {
+    var values = pending();
+    if (!Object.keys(values).length) return smsg('没有要保存的修改');
+    api('settings', { values: values }).then(function (r) { afterSave(r, '已保存'); }).catch(function (e) { smsg(e.message, false); });
+  };
+  $('sundo').onclick = function () { renderSettings(); smsg('已撤销未保存的修改'); };
+  $('sreset').onclick = function () {
+    if (!confirm('把所有服务器设置恢复成默认值？\n\n建议先点「导出当前配置」备份一份，以后可以再导入。')) return;
+    api('settings/reset', {}).then(function (r) { afterSave(r, '已恢复默认'); }).catch(function (e) { smsg(e.message, false); });
+  };
+  $('sexport').onclick = function () { location.href = '/api/settings/export'; };
+  $('simport').onclick = function () { $('sfile').value = ''; $('sfile').click(); };
+  $('sfile').onchange = function () {
+    var f = this.files[0]; if (!f) return;
+    f.text().then(function (txt) {
+      var data; try { data = JSON.parse(txt); } catch (e) { throw new Error('这不是有效的 JSON 文件'); }
+      var when = data.exportedAt ? '（导出于 ' + new Date(data.exportedAt).toLocaleString() + '）' : '';
+      if (!confirm('导入配置文件 ' + f.name + when + '？\n\n文件里的设置会立即生效并保存。')) return;
+      return api('settings/import', data).then(function (r) { afterSave(r, '已导入'); });
+    }).catch(function (e) { smsg(e.message, false); });
+  };
+  $('asend').onclick = function () {
+    var t = $('atext').value.trim(); if (!t) return;
+    api('announce', { text: t }).then(function (r) { smsg(r.done.join('')); $('atext').value = ''; }).catch(function (e) { smsg(e.message, false); });
+  };
+  var rTimer = null;
+  function paintRestart(left) {
+    clearInterval(rTimer); rTimer = null;
+    $('rcancel').hidden = left == null; $('rgo').disabled = left != null;
+    if (left == null) { $('rmsg').textContent = ''; return; }
+    var end = Date.now() + left * 1000;
+    var tick = function () {
+      var s = Math.max(0, Math.ceil((end - Date.now()) / 1000));
+      $('rmsg').textContent = s > 0 ? '还有 ' + s + ' 秒重启' : '正在重启，稍等几秒后点「刷新」';
+      if (s <= 0) { clearInterval(rTimer); rTimer = null; }
+    };
+    tick(); rTimer = setInterval(tick, 500);
+  }
+  function loadRestart() { api('restart').then(function (r) { if ($('rsec').value === '') $('rsec').value = r.seconds; paintRestart(r.left); }).catch(function () {}); }
+  $('rgo').onclick = function () {
+    var sec = Math.max(0, Math.round(Number($('rsec').value) || 0));
+    if (!confirm(sec ? '通知全服并在 ' + sec + ' 秒后重启服务器？' : '马上重启服务器？在线玩家会短暂断开，然后自动重连。')) return;
+    api('restart', { seconds: sec }).then(function (r) { smsg(r.done.join('')); paintRestart(r.left); }).catch(function (e) { smsg(e.message, false); });
+  };
+  $('rcancel').onclick = function () { api('restart', { cancel: true }).then(function (r) { smsg(r.done.join('')); paintRestart(null); }).catch(function (e) { smsg(e.message, false); }); };
+  loadRestart();
+  // ---------- blind boxes ----------
+  var boxes = [], boxSel = null, boxDraft = null;
+  function bmsg(text, ok) { var m = $('bmsg'); if (!m) return; m.textContent = text; m.className = ok === false ? 'bad' : 'ok'; }
+  function loadBoxes() {
+    return Promise.all([api('blindboxes'), itemCat.length ? null : api('items')]).then(function (r) {
+      boxes = r[0].boxes; if (r[1]) { itemCat = r[1].items; itemCats = r[1].categories || []; }
+      renderBoxList();
+      if (boxSel) openBox(boxSel, true);
+    }).catch(function (e) { $('boxList').innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; });
+  }
+  function renderBoxList() {
+    var q = $('boxQ').value.trim();
+    $('boxList').innerHTML = boxes.filter(function (b) { return !q || b.name.indexOf(q) >= 0 || String(b.itemId) === q; }).map(function (b) {
+      return '<div class="box' + (b.itemId === boxSel ? ' sel' : '') + '" data-id="' + b.itemId + '"><span class="n">' + esc(b.name) + '</span>' +
+        (b.custom ? '<span class="tag">已修改</span>' : '') + '<span class="tag">' + b.pool.length + ' 件</span></div>';
+    }).join('') || '<div class="empty">没有找到</div>';
+  }
+  $('boxQ').addEventListener('input', renderBoxList);
+  $('boxList').addEventListener('click', function (e) { var d = e.target.closest('[data-id]'); if (d) openBox(Number(d.getAttribute('data-id'))); });
+  function openBox(id, keepDraft) {
+    boxSel = id; renderBoxList();
+    var b = boxes.find(function (x) { return x.itemId === id; }); if (!b) return;
+    if (!keepDraft || !boxDraft || boxDraft.id !== id) boxDraft = { id: id, pool: b.pool.map(function (e) { return { itemId: e.itemId, name: e.name, weight: e.weight }; }) };
+    renderBox(b);
+  }
+  function renderBox(b) {
+    var total = boxDraft.pool.reduce(function (n, e) { return n + (Number(e.weight) || 0); }, 0);
+    $('boxDetail').innerHTML = '<h2>' + esc(b.name) + '</h2><div class="sub">编号 ' + b.itemId + ' · 商店价格 ' + b.buyPrice + ' · ' + (b.custom ? '内容已修改' : '默认内容') +
+      ' · 开出每件物品的概率 = 它的权重 ÷ 权重总和（' + total + '）</div>' +
+      '<table class="bag pool"><tbody>' + boxDraft.pool.map(function (e, i) {
+        return '<tr data-i="' + i + '"><td>' + esc(e.name) + ' <small class="items">' + e.itemId + '</small></td>' +
+          '<td>权重 <input class="w" type="number" min="1" step="1" value="' + esc(e.weight) + '"></td>' +
+          '<td class="attrs">' + (total > 0 ? (Math.round((Number(e.weight) || 0) / total * 10000) / 100) + '%' : '—') + '</td>' +
+          '<td><input class="sp" type="checkbox"' + (e.newSpecial ? ' checked' : '') + '></td>' +
+          '<td class="ops"><button class="danger rm">移除</button></td></tr>';
+      }).join('') + '</tbody></table>' +
+      '<div class="section"><h3>加入物品</h3><div class="give" style="grid-template-columns:2fr 100px auto">' +
+      '<label class="pick">物品（输入名字或编号搜索）<input id="boxAddQ" autocomplete="off"><div class="results" id="boxAddR" hidden></div></label>' +
+      '<label>权重<input id="boxAddW" type="number" min="1" value="1"></label><button id="boxAdd" disabled>加入</button></div></div>' +
+      '<div class="row"><button id="boxSave">保存</button><button class="ghost" id="boxUndo">撤销未保存的修改</button>' +
+      '<button class="danger" id="boxReset"' + (b.custom ? '' : ' disabled') + '>恢复这个盲盒的默认内容</button></div><div id="bmsg"></div>' +
+      '<div class="items" style="margin-top:10px">保存后玩家开这个盲盒立即按新内容抽取。开出装备时仍有机会带「强化 3% / 6% / 12%」。</div>';
+    var tb = $('boxDetail').querySelector('.pool');
+    tb.addEventListener('input', function (e) {
+      if (!e.target.classList.contains('w')) return;
+      var tr = e.target.closest('tr'); boxDraft.pool[Number(tr.getAttribute('data-i'))].weight = e.target.value;
+    });
+    tb.addEventListener('change', function () { renderBox(b); });
+    tb.addEventListener('click', function (e) {
+      if (!e.target.classList.contains('rm')) return;
+      boxDraft.pool.splice(Number(e.target.closest('tr').getAttribute('data-i')), 1); renderBox(b);
+    });
+    var picked = null, q = $('boxAddQ'), res = $('boxAddR');
+    q.addEventListener('input', function () {
+      picked = null; $('boxAdd').disabled = true;
+      var k = q.value.trim().toLowerCase(); if (!k) { res.hidden = true; return; }
+      var hits = itemCat.filter(function (t) { return (t.name.toLowerCase().indexOf(k) >= 0 || String(t.itemId) === k) && t.name.indexOf('盲盒') < 0; }).slice(0, 60);
+      res.innerHTML = hits.map(function (t, i) { return '<div data-k="' + i + '">' + esc(t.name) + ' <small>' + t.itemId + (t.slotName ? ' · ' + t.slotName : '') + (t.level ? ' · ' + t.level + '级' : '') + '</small></div>'; }).join('') || '<div><small>没有找到</small></div>';
+      res.hidden = false;
+      res.onclick = function (e) { var d = e.target.closest('[data-k]'); if (!d) return; picked = hits[+d.getAttribute('data-k')]; q.value = picked.name + '（' + picked.itemId + '）'; res.hidden = true; $('boxAdd').disabled = false; };
+    });
+    $('boxAdd').onclick = function () {
+      if (!picked) return;
+      var w = Number($('boxAddW').value) || 1;
+      var ex = boxDraft.pool.find(function (e) { return e.itemId === picked.itemId; });
+      if (ex) ex.weight = w; else boxDraft.pool.push({ itemId: picked.itemId, name: picked.name, weight: w });
+      renderBox(b); bmsg('已加入，记得点保存');
+    };
+    $('boxSave').onclick = function () {
+      api('blindbox/' + b.itemId, { pool: boxDraft.pool.map(function (e) { return { itemId: e.itemId, weight: Number(e.weight) }; }) })
+        .then(function (r) { boxes = r.boxes; boxDraft = null; openBox(b.itemId); bmsg(r.done.join('')); }).catch(function (e) { bmsg(e.message, false); });
+    };
+    $('boxUndo').onclick = function () { boxDraft = null; openBox(b.itemId); bmsg('已撤销'); };
+    $('boxReset').onclick = function () {
+      if (!confirm('把 ' + b.name + ' 恢复成默认内容？')) return;
+      api('blindbox/' + b.itemId, { reset: true }).then(function (r) { boxes = r.boxes; boxDraft = null; openBox(b.itemId); bmsg(r.done.join('')); }).catch(function (e) { bmsg(e.message, false); });
+    };
+  }
+
+  // ---------- merchants ----------
+  var TABS = { medicine: '药品', weapon: '武器', armor: '护具', accessory: '饰品', book: '书', misc: '其他' };
+  var shops = [], sellable = [], shopSel = null, shopDraft = null;
+  function pmsg(text, ok) { var m = $('pmsg'); if (!m) return; m.textContent = text; m.className = ok === false ? 'bad' : 'ok'; }
+  function shopName(m) { return m.labels.join(' / ') || m.id; }
+  function loadShops() {
+    return api('shops').then(function (r) {
+      shops = r.merchants; sellable = r.sellable;
+      renderShopList();
+      if (shopSel) openShop(shopSel, true);
+    }).catch(function (e) { $('shopList').innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; });
+  }
+  function renderShopList() {
+    var q = $('shopQ').value.trim();
+    $('shopList').innerHTML = shops.filter(function (m) { return !q || (shopName(m) + m.id + m.maps.join(' ') + m.kindLabel).indexOf(q) >= 0; }).map(function (m) {
+      return '<div class="box' + (m.id === shopSel ? ' sel' : '') + '" data-id="' + esc(m.id) + '"><span class="n">' + esc(shopName(m)) + ' <small class="items">' + esc(m.kindLabel) + (m.maps.length ? ' · ' + esc(m.maps.join('、')) : '') + '</small></span>' +
+        (m.custom ? '<span class="tag">已修改</span>' : '') + (m.special ? '<span class="tag">特殊 ' + m.special + '</span>' : '') + '<span class="tag">' + m.count + ' 件</span></div>';
+    }).join('') || '<div class="empty">没有找到</div>';
+  }
+  $('shopQ').addEventListener('input', renderShopList);
+  $('shopList').addEventListener('click', function (e) { var d = e.target.closest('[data-id]'); if (d) openShop(d.getAttribute('data-id')); });
+  function openShop(id, keepDraft) {
+    shopSel = id; renderShopList();
+    if (keepDraft && shopDraft && shopDraft.id === id) return Promise.resolve(renderShop());
+    return api('shop/' + encodeURIComponent(id)).then(function (d) {
+      shopDraft = { id: id, custom: d.custom, items: d.items.map(function (x) { return Object.assign({}, x, { newPrice: x.price, newSpecial: !!x.special }); }) };
+      renderShop();
+    }).catch(function (e) { $('shopDetail').innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; });
+  }
+  function renderShop() {
+    var m = shops.find(function (x) { return x.id === shopSel; }); if (!m || !shopDraft) return;
+    $('shopDetail').innerHTML = '<h2>' + esc(shopName(m)) + '</h2><div class="sub">' + esc(m.kindLabel) + (m.maps.length ? ' · 地图 ' + esc(m.maps.join('、')) : '') + ' · ' +
+      (shopDraft.custom ? '商品已修改' : '默认商品') + ' · 共 ' + shopDraft.items.length + ' 件</div>' +
+      '<table class="bag pool"><thead><tr><th>物品</th><th>分类</th><th>价格</th><th title="勾上 = 特殊清单：一定卖，不看职业和等级">特殊</th><th></th></tr></thead><tbody>' + shopDraft.items.map(function (e, i) {
+        var mod = Number(e.newPrice) !== e.defaultPrice;
+        return '<tr data-i="' + i + '"><td>' + esc(e.name) + ' <small class="items">' + e.itemId + '</small></td><td class="attrs">' + (TABS[e.tab] || e.tab) + '</td>' +
+          '<td><input class="pr' + (mod ? ' mod' : '') + '" type="number" min="1" step="1" value="' + esc(e.newPrice) + '"> <small class="items">默认 ' + e.defaultPrice + '</small></td>' +
+          '<td><input class="sp" type="checkbox"' + (e.newSpecial ? ' checked' : '') + '></td>' +
+          '<td class="ops"><button class="danger rm">移除</button></td></tr>';
+      }).join('') + '</tbody></table>' +
+      '<div class="section"><h3>加入商品</h3><div class="give" style="grid-template-columns:2fr auto">' +
+      '<label class="pick">物品（输入名字或编号搜索）<input id="shopAddQ" autocomplete="off"><div class="results" id="shopAddR" hidden></div></label>' +
+      '<button id="shopAdd" disabled>加入</button></div></div>' +
+      '<div class="row"><button id="shopSave">保存</button><button class="ghost" id="shopUndo">撤销未保存的修改</button>' +
+      '<button class="danger" id="shopReset"' + (shopDraft.custom ? '' : ' disabled') + '>恢复这个商人的默认商品</button></div><div id="pmsg"></div>' +
+      '<div class="items" style="margin-top:10px">价格对所有卖这件物品的商人都生效，填回默认价格就是恢复原价。武器、护具、饰品和技能书只会显示给能用的职业看，并且只显示要求等级不超过「职业等级 + 15」的（这个数在「服务器设置 → 商店」里改）；勾上「特殊」的物品是这个商人的特殊清单，一定卖，不看职业和等级。每个分类一页最多显示 63 件。' +
+      '「服务器设置」里的「一键恢复默认」会把所有商人的商品和价格一起恢复，导出配置时也会包含它们。</div>';
+    var tb = $('shopDetail').querySelector('.pool');
+    tb.addEventListener('input', function (e) {
+      if (!e.target.classList.contains('pr')) return;
+      shopDraft.items[Number(e.target.closest('tr').getAttribute('data-i'))].newPrice = e.target.value;
+    });
+    tb.addEventListener('change', function (e) {
+      if (e.target.classList.contains('sp')) { shopDraft.items[Number(e.target.closest('tr').getAttribute('data-i'))].newSpecial = e.target.checked; shopDraft.specialChanged = true; }
+      renderShop();
+    });
+    tb.addEventListener('click', function (e) {
+      if (!e.target.classList.contains('rm')) return;
+      shopDraft.items.splice(Number(e.target.closest('tr').getAttribute('data-i')), 1); shopDraft.itemsChanged = true; renderShop();
+    });
+    var picked = null, q = $('shopAddQ'), res = $('shopAddR');
+    q.addEventListener('input', function () {
+      picked = null; $('shopAdd').disabled = true;
+      var k = q.value.trim().toLowerCase(); if (!k) { res.hidden = true; return; }
+      var hits = sellable.filter(function (t) { return t.name.toLowerCase().indexOf(k) >= 0 || String(t.itemId) === k; }).slice(0, 60);
+      res.innerHTML = hits.map(function (t, i) { return '<div data-k="' + i + '">' + esc(t.name) + ' <small>' + t.itemId + ' · ' + (TABS[t.tab] || t.tab) + ' · ' + t.price + ' 金</small></div>'; }).join('') || '<div><small>没有找到</small></div>';
+      res.hidden = false;
+      res.onclick = function (e) { var d = e.target.closest('[data-k]'); if (!d) return; picked = hits[+d.getAttribute('data-k')]; q.value = picked.name + '（' + picked.itemId + '）'; res.hidden = true; $('shopAdd').disabled = false; };
+    });
+    $('shopAdd').onclick = function () {
+      if (!picked) return;
+      if (shopDraft.items.some(function (e) { return e.itemId === picked.itemId; })) return pmsg('这个商人已经在卖它了', false);
+      shopDraft.items.push({ itemId: picked.itemId, name: picked.name, tab: picked.tab, defaultPrice: picked.price, price: picked.price, newPrice: picked.price, newSpecial: false });
+      shopDraft.itemsChanged = true; renderShop(); pmsg('已加入，记得点保存');
+    };
+    $('shopSave').onclick = function () {
+      var prices = {};
+      shopDraft.items.forEach(function (e) { if (String(e.newPrice) !== String(e.price)) prices[e.itemId] = Number(e.newPrice) === e.defaultPrice ? null : Number(e.newPrice); });
+      var body = { prices: prices };
+      if (shopDraft.itemsChanged) body.items = shopDraft.items.map(function (e) { return e.itemId; });
+      if (shopDraft.itemsChanged || shopDraft.specialChanged) body.special = shopDraft.items.filter(function (e) { return e.newSpecial; }).map(function (e) { return e.itemId; });
+      api('shop/' + encodeURIComponent(shopSel), body).then(function (r) { shops = r.shops.merchants; shopDraft = null; openShop(shopSel).then(function () { pmsg(r.done.join('')); }); }).catch(function (e) { pmsg(e.message, false); });
+    };
+    $('shopUndo').onclick = function () { shopDraft = null; openShop(shopSel).then(function () { pmsg('已撤销'); }); };
+    $('shopReset').onclick = function () {
+      if (!confirm('把「' + shopName(m) + '」恢复成默认商品？（价格不变）')) return;
+      api('shop/' + encodeURIComponent(shopSel), { reset: true }).then(function (r) { shops = r.shops.merchants; shopDraft = null; openShop(shopSel).then(function () { pmsg(r.done.join('')); }); }).catch(function (e) { pmsg(e.message, false); });
+    };
+  }
+
+  // ---------- profession attribute spreads ----------
+  var SPREAD_KEYS = ['力量', '敏捷', '感知', '聪明', '运气'];
+  function say2(id, text, ok) { var m = $(id); if (!m) return; m.textContent = text; m.className = ok === false ? 'bad' : 'ok'; }
+  function loadSpreads() {
+    return api('spreads').then(function (r) { renderSpreads(r.spreads); }).catch(function (e) { say2('spmsg', e.message, false); });
+  }
+  function renderSpreads(list) {
+    $('spTable').innerHTML = '<thead><tr><th>职业</th>' + SPREAD_KEYS.map(function (k) { return '<th>' + k + '</th>'; }).join('') + '<th>合计</th><th></th></tr></thead><tbody>' +
+      list.map(function (sp) {
+        var sum = sp.values.reduce(function (a, b) { return a + b; }, 0);
+        return '<tr data-prof="' + esc(sp.profession) + '"><td>' + esc(sp.name) + (sp.changed ? ' <span class="tag">已修改</span>' : '') + '</td>' +
+          sp.values.map(function (v, i) { return '<td><input type="number" min="0" max="1000" step="1" value="' + v + '" class="' + (v !== sp.defaults[i] ? 'mod' : '') + '" title="默认 ' + sp.defaults[i] + '"></td>'; }).join('') +
+          '<td class="attrs">' + sum + '<br><small>默认 ' + sp.defaults.join(' / ') + '</small></td>' +
+          '<td class="ops"><button class="sv">保存</button> <button class="ghost rs"' + (sp.changed ? '' : ' disabled') + '>恢复默认</button></td></tr>';
+      }).join('') + '</tbody>';
+  }
+  $('spTable').addEventListener('click', function (e) {
+    var tr = e.target.closest('tr[data-prof]'); if (!tr) return;
+    var prof = tr.getAttribute('data-prof'), body = null;
+    if (e.target.classList.contains('sv')) body = { profession: prof, values: Array.prototype.map.call(tr.querySelectorAll('input'), function (x) { return Number(x.value); }) };
+    else if (e.target.classList.contains('rs')) body = { profession: prof, reset: true };
+    if (!body) return;
+    api('spreads', body).then(function (r) { renderSpreads(r.spreads); say2('spmsg', r.done.join('')); }).catch(function (er) { say2('spmsg', er.message, false); });
+  });
+  $('spResetAll').onclick = function () {
+    if (!confirm('把所有职业的默认属性点数恢复成默认值？')) return;
+    api('spreads', { resetAll: true }).then(function (r) { renderSpreads(r.spreads); say2('spmsg', r.done.join('')); }).catch(function (er) { say2('spmsg', er.message, false); });
+  };
+
+  // ---------- monsters ----------
+  var monsters = [], monFields = [], monSel = null, mapNames = {};
+  var CATS = ['猎场', '荒野猎场', '林地猎场', '雪原', '矿洞', '竞技场', '城镇', '房间', '其他'];
+  var LV_BANDS = [['1–30 级', 1, 30], ['31–60 级', 31, 60], ['61–100 级', 61, 100], ['100 级以上', 101, 1e9]];
+  var monLv = '', monCat = '', mapCat = '';
+  function chips(el, list, cur, onPick) {
+    el.innerHTML = ['<button data-c=""' + (cur ? '' : ' class="on"') + '>全部</button>'].concat(list.map(function (c) { return '<button data-c="' + esc(c) + '"' + (c === cur ? ' class="on"' : '') + '>' + esc(c) + '</button>'; })).join('');
+    el.onclick = function (e) { var b = e.target.closest('[data-c]'); if (b) onPick(b.getAttribute('data-c')); };
+  }
+  function gotoView(v) { var b = document.querySelector('.tabs [data-view="' + v + '"]'); if (b) b.click(); }
+  function loadMonsters() {
+    return api('monsters').then(function (r) { monsters = r.monsters; monFields = r.fields; renderMonList(); if (monSel) openMonster(monSel); })
+      .catch(function (e) { $('monList').innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; });
+  }
+  function renderMonList() {
+    var q = $('monQ').value.trim().toLowerCase(), sort = $('monSort').value;
+    chips($('monLv'), LV_BANDS.map(function (b) { return b[0]; }), monLv, function (c) { monLv = c; renderMonList(); });
+    chips($('monCat'), CATS.filter(function (c) { return monsters.some(function (m) { return (m.categories || []).indexOf(c) >= 0; }); }), monCat, function (c) { monCat = c; renderMonList(); });
+    var band = LV_BANDS.find(function (b) { return b[0] === monLv; });
+    var list = monsters.filter(function (m) {
+      if (band && (m.stats.level < band[1] || m.stats.level > band[2])) return false;
+      if (monCat && (m.categories || []).indexOf(monCat) < 0) return false;
+      return !q || (m.name + ' ' + m.monsterId + ' ' + m.maps.join(' ') + ' ' + (m.mapNames || []).join(' ')).toLowerCase().indexOf(q) >= 0;
+    }).slice();
+    if (sort === 'name') list.sort(function (a, b) { return a.name.localeCompare(b.name, 'zh'); });
+    else if (sort === 'maps') list.sort(function (a, b) { return b.maps.length - a.maps.length || a.stats.level - b.stats.level; });
+    else if (sort === 'changed') list.sort(function (a, b) { return (b.changed ? 1 : 0) - (a.changed ? 1 : 0) || a.stats.level - b.stats.level; });
+    $('monList').innerHTML = list.map(function (m) {
+      return '<div class="box' + (m.monsterId === monSel ? ' sel' : '') + '" data-id="' + esc(m.monsterId) + '"><span class="n">' + esc(m.name) + ' <small class="items">' + m.stats.level + ' 级 · ' + m.maps.length + ' 张地图</small></span>' +
+        (m.changed ? '<span class="tag">已修改</span>' : '') + '</div>';
+    }).join('') || '<div class="empty">没有找到</div>';
+  }
+  $('monQ').addEventListener('input', renderMonList);
+  $('monSort').addEventListener('change', renderMonList);
+  $('monList').addEventListener('click', function (e) { var d = e.target.closest('[data-id]'); if (d) { monSel = d.getAttribute('data-id'); renderMonList(); openMonster(monSel); } });
+  function openMonster(id) {
+    var m = monsters.find(function (x) { return x.monsterId === id; }); if (!m) return;
+    $('monDetail').innerHTML = '<h2>' + esc(m.name) + '</h2><div class="sub">编号 ' + esc(m.monsterId) + ' · 造型 ' + esc(m.model || '—') + ' · ' + (m.changed ? '数值已修改' : '默认数值') + '</div>' +
+      '<div class="grid mf">' + monFields.map(function (f) {
+        var v = m.stats[f[0]], d = m.defaults[f[0]];
+        if (f[4] && f[4].options) return '<label>' + esc(f[1]) + ' <span class="now">默认 ' + esc(d || '—') + '</span><select data-s="' + f[0] + '" class="' + (v !== d ? 'mod' : '') + '">' +
+          f[4].options.concat(f[4].options.some(function (o) { return o[0] === v; }) ? [] : [[v, v]]).map(function (o) { return '<option value="' + esc(o[0]) + '"' + (o[0] === v ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('') + '</select></label>';
+        return '<label>' + esc(f[1]) + ' <span class="now">默认 ' + d + '</span><input data-f="' + f[0] + '" type="number" min="' + f[2] + '" max="' + f[3] + '" step="1" value="' + v + '" class="' + (v !== d ? 'mod' : '') + '"></label>';
+      }).join('') + '</div>' +
+      '<div class="row"><button id="monSave">保存</button><button class="danger" id="monReset"' + (m.changed ? '' : ' disabled') + '>恢复这个怪物的默认数值</button></div><div id="mmsg"></div>' +
+      '<div class="section"><h3>出现在这些地图 <small class="items">（点地图名去改那张地图的怪）</small></h3><div class="items" id="monMaps">' + (m.maps.map(function (id, i) { return '<span class="xlink" data-map="' + esc(id) + '">' + esc((m.mapNames && m.mapNames[i] && m.mapNames[i] !== id ? m.mapNames[i] + ' ' : '') + id) + '</span>'; }).join('、') || '—') + '</div></div>' +
+      '<div class="items" style="margin-top:10px">保存后所有地图上的这种怪立即按新数值重新刷出（召唤出来的狐仙和竞技场靶子不受影响）。「服务器设置」里的怪物血量、攻击倍率会再乘在这些数值上。</div>';
+    $('monMaps').onclick = function (e) { var a = e.target.closest('[data-map]'); if (!a) return; var id2 = a.getAttribute('data-map'); gotoView('maps'); setTimeout(function () { (mapsList.length ? Promise.resolve() : loadMaps()).then(function () { openMap(id2); }); }, 0); };
+    $('monSave').onclick = function () {
+      var stats = {};
+      Array.prototype.forEach.call($('monDetail').querySelectorAll('[data-f]'), function (el) { stats[el.getAttribute('data-f')] = Number(el.value); });
+      Array.prototype.forEach.call($('monDetail').querySelectorAll('[data-s]'), function (el) { stats[el.getAttribute('data-s')] = el.value; });
+      api('monster/' + encodeURIComponent(id), { stats: stats }).then(function (r) { return loadMonsters().then(function () { say2('mmsg', r.done.join('')); }); }).catch(function (e) { say2('mmsg', e.message, false); });
+    };
+    $('monReset').onclick = function () {
+      api('monster/' + encodeURIComponent(id), { reset: true }).then(function (r) { return loadMonsters().then(function () { say2('mmsg', r.done.join('')); }); }).catch(function (e) { say2('mmsg', e.message, false); });
+    };
+    if (window.__qiyuV12 && window.__qiyuV12.monsterDetail) window.__qiyuV12.monsterDetail(id, $('monDetail'));
+  }
+  $('monResetAll').onclick = function () {
+    if (!confirm('把所有怪物数值和所有地图的怪物设置恢复成默认？')) return;
+    api('monsters/reset', {}).then(function (r) { loadMonsters(); alert(r.done.join('')); }).catch(function (e) { alert(e.message); });
+  };
+
+  // ---------- map monsters ----------
+  var mapsList = [], mapSel = null, mapDraft = null;
+  function loadMaps() {
+    return Promise.all([api('maps'), monsters.length ? null : api('monsters')]).then(function (r) {
+      mapsList = r[0].maps; if (r[1]) { monsters = r[1].monsters; monFields = r[1].fields; }
+      renderMapList(); if (mapSel) openMap(mapSel, true);
+    }).catch(function (e) { $('mapList').innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; });
+  }
+  function renderMapList() {
+    var q = $('mapQ').value.trim().toLowerCase(), all = $('mapAll').checked;
+    chips($('mapCat'), CATS.filter(function (c) { return mapsList.some(function (m) { return m.category === c && (all || m.entries.length || m.changed); }); }), mapCat, function (c) { mapCat = c; renderMapList(); });
+    $('mapList').innerHTML = mapsList.filter(function (m) {
+      if (!all && !m.entries.length && !m.changed) return false;
+      if (mapCat && m.category !== mapCat) return false;
+      return !q || (m.mapId + ' ' + m.name + ' ' + m.entries.map(function (e) { return e.name; }).join(' ')).toLowerCase().indexOf(q) >= 0;
+    }).map(function (m) {
+      var n = m.entries.reduce(function (a, e) { return a + e.count; }, 0);
+      return '<div class="box' + (m.mapId === mapSel ? ' sel' : '') + '" data-id="' + esc(m.mapId) + '"><span class="n">' + esc(m.name || m.mapId) + ' <small class="items">' + esc(m.mapId) + '</small></span>' +
+        '<span class="tag">' + esc(m.category || '') + '</span>' + (m.changed ? '<span class="tag">已修改</span>' : '') + '<span class="tag">' + n + ' 只</span></div>';
+    }).join('') || '<div class="empty">没有找到</div>';
+  }
+  $('mapQ').addEventListener('input', renderMapList);
+  $('mapAll').addEventListener('change', renderMapList);
+  $('mapList').addEventListener('click', function (e) { var d = e.target.closest('[data-id]'); if (d) openMap(d.getAttribute('data-id')); });
+  function openMap(id, keep) {
+    mapSel = id; renderMapList();
+    var m = mapsList.find(function (x) { return x.mapId === id; }); if (!m) return;
+    if (!keep || !mapDraft || mapDraft.id !== id) mapDraft = { id: id, respawn: m.respawnSeconds, entries: m.entries.map(function (e) { return { monsterId: e.monsterId, name: e.name, level: e.level, count: e.count, stackSize: e.stackSize }; }) };
+    renderMap(m);
+  }
+  function renderMap(m) {
+    $('mapDetail').innerHTML = '<h2>' + esc(m.name || m.mapId) + '</h2><div class="sub">地图 ' + esc(m.mapId) + ' · ' + (m.changed ? '怪物已修改' : '默认怪物') + '</div>' +
+      '<table class="bag pool"><thead><tr><th>怪物</th><th>数量</th><th>每群几只</th><th></th></tr></thead><tbody>' + mapDraft.entries.map(function (e, i) {
+        return '<tr data-i="' + i + '"><td><span class="xlink" data-mon="' + esc(e.monsterId) + '" title="去改这种怪的数值">' + esc(e.name) + '</span> <small class="items">' + esc(e.monsterId) + (e.level ? ' · ' + e.level + ' 级' : '') + '</small></td>' +
+          '<td><input class="w" data-k="count" type="number" min="0" max="200" step="1" value="' + e.count + '"></td>' +
+          '<td><input class="w" data-k="stackSize" type="number" min="1" max="50" step="1" value="' + e.stackSize + '"></td>' +
+          '<td><input class="sp" type="checkbox"' + (e.newSpecial ? ' checked' : '') + '></td>' +
+          '<td class="ops"><button class="danger rm">移除</button></td></tr>';
+      }).join('') + '</tbody></table>' +
+      '<div class="section"><h3>加入怪物（可以加其他地图的怪）</h3><div class="give" style="grid-template-columns:2fr 90px 90px auto">' +
+      '<label class="pick">怪物（点一下看全部，或输入名字、编号、等级搜索）<input id="mapAddQ" autocomplete="off"><div class="results" id="mapAddR" hidden></div></label>' +
+      '<label>数量<input id="mapAddN" type="number" min="1" value="5"></label><label>每群几只<input id="mapAddS" type="number" min="1" value="1"></label><button id="mapAdd" disabled>加入</button></div></div>' +
+      '<div class="grid" style="margin-top:14px"><label>刷新时间（秒，怪被打死后多久重新刷出）<input id="mapResp" type="number" min="2" max="86400" value="' + esc(mapDraft.respawn) + '"></label></div>' +
+      '<div class="row"><button id="mapSave">保存</button><button class="ghost" id="mapUndo">撤销未保存的修改</button>' +
+      '<button class="danger" id="mapReset"' + (m.changed ? '' : ' disabled') + '>恢复这张地图的默认怪物</button></div><div id="gmsg"></div>' +
+      '<div class="items" style="margin-top:10px">数量是这张地图上同时存在的总只数；「每群几只」是一起刷出来的一小群。保存后这张地图上的怪立即换成新列表。怪物本身的数值在「怪物」页改。</div>';
+    var tb = $('mapDetail').querySelector('.pool');
+    tb.addEventListener('input', function (e) {
+      var k = e.target.getAttribute('data-k'); if (!k) return;
+      mapDraft.entries[Number(e.target.closest('tr').getAttribute('data-i'))][k] = e.target.value;
+    });
+    tb.addEventListener('click', function (e) {
+      var ml = e.target.closest('[data-mon]');
+      if (ml) { monSel = ml.getAttribute('data-mon'); gotoView('monsters'); setTimeout(function () { (monsters.length ? Promise.resolve(renderMonList()) : loadMonsters()).then(function () { openMonster(monSel); }); }, 0); return; }
+      if (!e.target.classList.contains('rm')) return;
+      mapDraft.entries.splice(Number(e.target.closest('tr').getAttribute('data-i')), 1); renderMap(m);
+    });
+    $('mapResp').addEventListener('input', function () { mapDraft.respawn = this.value; });
+    var picked = null, q = $('mapAddQ'), res = $('mapAddR');
+    function showPick() {
+      picked = null; $('mapAdd').disabled = true;
+      var k = q.value.trim().toLowerCase();
+      var hits = monsters.filter(function (t) { return !k || (t.name + ' ' + t.monsterId + ' ' + t.stats.level + '级').toLowerCase().indexOf(k) >= 0; }).slice(0, k ? 80 : 400);
+      res.innerHTML = hits.map(function (t, i) { return '<div data-k="' + i + '">' + esc(t.name) + ' <small>' + esc(t.monsterId) + ' · ' + t.stats.level + ' 级 · ' + esc(t.maps.slice(0, 3).join('、')) + '</small></div>'; }).join('') || '<div><small>没有找到</small></div>';
+      res.hidden = false;
+      res.onclick = function (e) { var d = e.target.closest('[data-k]'); if (!d) return; picked = hits[+d.getAttribute('data-k')]; q.value = picked.name + '（' + picked.monsterId + '）'; res.hidden = true; $('mapAdd').disabled = false; };
+    }
+    q.addEventListener('input', showPick);
+    q.addEventListener('focus', function () { if (!picked) showPick(); });
+    q.addEventListener('blur', function () { setTimeout(function () { res.hidden = true; }, 200); });
+    $('mapAdd').onclick = function () {
+      if (!picked) return;
+      if (mapDraft.entries.some(function (e) { return e.monsterId === picked.monsterId; })) return say2('gmsg', '这张地图已经有这种怪了，直接改数量就行', false);
+      mapDraft.entries.push({ monsterId: picked.monsterId, name: picked.name, level: picked.stats.level, count: Number($('mapAddN').value) || 1, stackSize: Number($('mapAddS').value) || 1 });
+      renderMap(m); say2('gmsg', '已加入，记得点保存');
+    };
+    $('mapSave').onclick = function () {
+      var body = { respawnSeconds: Number(mapDraft.respawn), entries: mapDraft.entries.map(function (e) { return { monsterId: e.monsterId, count: Number(e.count), stackSize: Number(e.stackSize) }; }) };
+      api('map/' + encodeURIComponent(m.mapId), body).then(function (r) { mapDraft = null; return loadMaps().then(function () { openMap(m.mapId); say2('gmsg', r.done.join('')); }); }).catch(function (e) { say2('gmsg', e.message, false); });
+    };
+    $('mapUndo').onclick = function () { mapDraft = null; openMap(m.mapId); say2('gmsg', '已撤销'); };
+    $('mapReset').onclick = function () {
+      if (!confirm('把 ' + (m.name || m.mapId) + ' 的怪物恢复成默认？')) return;
+      api('map/' + encodeURIComponent(m.mapId), { reset: true }).then(function (r) { mapDraft = null; return loadMaps().then(function () { openMap(m.mapId); say2('gmsg', r.done.join('')); }); }).catch(function (e) { say2('gmsg', e.message, false); });
+    };
+  }
+
+  document.querySelector('.tabs').addEventListener('click', function (e) {
+    var v = e.target.dataset && e.target.dataset.view; if (!v) return;
+    document.querySelectorAll('.tabs button').forEach(function (b) { b.classList.toggle('on', b === e.target); });
+    document.querySelector('main').hidden = v !== 'accounts';
+    $('settingsView').hidden = v !== 'settings';
+    $('boxView').hidden = v !== 'boxes';
+    $('shopView').hidden = v !== 'shops';
+    $('spreadView').hidden = v !== 'spreads';
+    $('monsterView').hidden = v !== 'monsters';
+    $('mapView').hidden = v !== 'maps';
+    if (v === 'settings') loadSettings(); else if (v === 'boxes') loadBoxes(); else if (v === 'shops') loadShops();
+    else if (v === 'spreads') loadSpreads(); else if (v === 'monsters') loadMonsters(); else if (v === 'maps') loadMaps(); else loadAll();
+  });
+})();
+</script>
+</body>
+</html>

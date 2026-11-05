@@ -1,0 +1,68 @@
+'use strict';
+// Feature modules register their packet handlers on the GameServer.
+const { Items } = require('./items');
+const { Skills } = require('./skills');
+const { Chat } = require('./chat');
+const { Bank } = require('./bank');
+const { Townhouse } = require('./townhouse');
+const { Crafting } = require('./crafting');
+const { Garden } = require('./garden');
+const { Snooker } = require('./snooker');
+const { Party } = require('./party');
+const { Interaction } = require('./interaction');
+const { CardPuzzle } = require('./cardpuzzle');
+const { LevelLock } = require('./levellock');
+const { Settings } = require('./settings');
+const { Shops } = require('./shops');
+const { Ext } = require('./ext');
+const { Mounts } = require('./mounts');
+const { Balance } = require('./balance');
+const { Arena } = require('./arena');
+const { AutoHunt } = require('./autohunt');
+const { Blessing } = require('./blessing');
+const { NightFair } = require('./nightfair');
+const { World } = require('./world');
+const { Formulas } = require('./formulas');
+const { ItemAdmin } = require('./itemadmin');
+const { Marriage } = require('./marriage');
+const { Teams } = require('./teams');
+const { Professions } = require('./professions');
+const { Uploads } = require('./uploads');
+const { CustomSkills } = require('./customskills');
+
+function loadFeatures(game) {
+  game.use('ext', new Ext());
+  game.use('settings', new Settings());
+  game.use('balance', new Balance());
+  game.use('shops', new Shops());
+  game.use('items', new Items());
+  game.use('skills', new Skills());
+  game.use('chat', new Chat());
+  game.use('bank', new Bank());
+  game.use('townhouse', new Townhouse());
+  game.use('crafting', new Crafting());
+  game.use('garden', new Garden());
+  game.use('snooker', new Snooker());
+  game.use('party', new Party());
+  game.use('interaction', new Interaction());
+  game.use('cardPuzzle', new CardPuzzle());
+  game.use('levelLock', new LevelLock());
+  game.use('mounts', new Mounts());
+  game.use('arena', new Arena());
+  game.use('autoHunt', new AutoHunt());
+  game.use('blessing', new Blessing());
+  game.use('nightFair', new NightFair());
+  game.use('world', new World());
+  game.use('formulas', new Formulas());
+  game.use('itemAdmin', new ItemAdmin());
+  game.use('marriage', new Marriage());
+  game.use('teams', new Teams());
+  game.use('professions', new Professions());
+  game.use('uploads', new Uploads());
+  game.use('customSkills', new CustomSkills());
+  game.use('batch15', new (require('./batch15').Batch15)());
+  game.use('batch152', new (require('./batch152').Batch152)());
+  return game;
+}
+
+module.exports = { loadFeatures };

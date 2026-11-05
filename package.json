@@ -1,0 +1,19 @@
+{
+  "name": "qiyu-server",
+  "version": "1.0.0",
+  "description": "奇域网页版游戏服务端",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node test/smoke.js && node test/bank.js && node test/crafting.js && node test/garden.js && node test/snooker.js && node test/skills.js && node test/interaction.js && node test/cardpuzzle.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "ws": "^8.22.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
