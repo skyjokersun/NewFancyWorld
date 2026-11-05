@@ -1,0 +1,17 @@
+# LICENSE / COPYRIGHT NOTICE
+
+Copyright (c) 2026 SSS, **only for original contributions owned by the project maintainer**.
+
+**Status: rights-reserved pending an explicit open-source licensing decision.**
+
+No permission to copy, modify, distribute, sublicense or commercialize original contributions is granted by this notice, except as otherwise required by applicable law or separately authorized in writing by the relevant copyright holder.
+
+## Scope and exclusions
+
+This notice is **not** a claim of ownership over the original Qiyu game, its names, trademarks, assets, music, sound effects, maps, data or any third-party contributions. Those materials remain subject to their respective copyright holders' rights and terms, if any.
+
+Any component that already carries a third-party license remains governed by that license; this notice does not revoke or replace it. In particular, the third-party npm dependency `ws` retains its own license.
+
+No MIT, ISC, GPL or other uniform open-source license applies to the entire repository at this time. An open-source license may be adopted later **for specifically identified original code** once ownership and the maintainer's preferred terms are confirmed.
+
+See `docs/ASSET-AND-LICENSE-REVIEW.md` for release checks.
