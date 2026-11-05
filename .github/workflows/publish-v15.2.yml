@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'docs/RELEASE-v15.2.md'
+      - '.github/workflows/publish-v15.2.yml'
   workflow_dispatch:
 
 permissions:
@@ -12,7 +13,9 @@ permissions:
 
 jobs:
   publish:
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && contains(github.event.head_commit.message, 'release: publish v15.2 source preview'))
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && github.event.head_commit.message == 'release-v15.2 source preview')
     runs-on: ubuntu-latest
     steps:
       - name: Check out tagged code
