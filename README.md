@@ -38,7 +38,7 @@ Avoid exposing the GM admin HTTP service directly to the internet. Do not enable
 
 ## Releases
 
-The `v15.2` release is planned as a **source-only preview** of the reviewed repository snapshot; it is not a runnable Windows game distribution. GitHub provides source ZIP and TAR archives automatically when the release is published. [Check the actual release status](https://github.com/skyjokersun/NewFancyWorld/releases).
+The [`v15.2` source-only prerelease](https://github.com/skyjokersun/NewFancyWorld/releases/tag/v15.2) **is published**. It contains the repository snapshot in GitHub-generated source ZIP/TAR downloads, **not** a runnable Windows game distribution.
 
 The separately prepared `SSS-Qiyu-V15.2-Win64.exe` is roughly 175 MiB and **has not been uploaded**, since it embeds archived game resources requiring redistribution-rights review. Its self-signed `CN=SSS` signature does not make it a trusted Windows publisher.
 
