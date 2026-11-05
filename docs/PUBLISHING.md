@@ -10,7 +10,7 @@ As of November 2026, **130 reviewed source and support files have been committed
 - The Windows EXE, because it includes archived game resources.
 - Five auxiliary development tools: `tools/build-named-index.js`, `tools/catalog-lib.js`, `tools/pack-site.js`, `tools/site-files.js`, `tools/sysload.js`.
 
-The original full project package and filtered original source-only archive are available to the maintainer in the ChatGPT project conversation. A GitHub Actions workflow is configured to publish the reviewed repository snapshot as a **source-only** `v15.2` prerelease; see the [Releases page](https://github.com/skyjokersun/NewFancyWorld/releases) for actual status. The automatically generated GitHub source ZIP/TAR archives will contain only the source present in the tagged commit.
+The original full project package and filtered original source-only archive are available to the maintainer in the ChatGPT project conversation. The **[v15.2 source-only prerelease](https://github.com/skyjokersun/NewFancyWorld/releases/tag/v15.2) is now published**. GitHub-generated source ZIP/TAR archives contain only the repository code at the tagged commit. The Windows EXE is **not** in this release. The automatically generated GitHub source ZIP/TAR archives will contain only the source present in the tagged commit.
 
 ## Upload remaining reviewed source files
 
