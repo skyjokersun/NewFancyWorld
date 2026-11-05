@@ -1,31 +1,36 @@
-# Publish V15.2 source to this repository
+# V15.2 publication status / 发布状态
 
-The prepared source ZIP is **not** meant to be committed as one giant file. Extract `Qiyu-V15.2-GitHub-Source.zip` and upload the **contents** of its `qiyu-server/` folder.
+As of November 2026, **130 reviewed source and support files have been committed to `main`**, including original server modules, tests, and the Windows launcher source code. This is **not** the complete runnable game.
 
-**Before publishing:** Follow [asset and rights review](ASSET-AND-LICENSE-REVIEW.md). It includes client-derived data and assets whose redistribution rights have not been established. Exclude anything you cannot legally redistribute.
+## Still not published
 
-## Use GitHub Desktop
+- The large `site.pak` client bundle and all third-party game images, sounds, and music.
+- Client-derived datasets under `data/`, including maps and catalog exports.
+- Front-end patches under `site/patches/` and `frontend-patch/`, pending content/rights review.
+- The Windows EXE, because it includes archived game resources.
+- Five auxiliary development tools: `tools/build-named-index.js`, `tools/catalog-lib.js`, `tools/pack-site.js`, `tools/site-files.js`, `tools/sysload.js`.
 
-1. Clone `https://github.com/skyjokersun/NewFancyWorld.git`.
-2. Copy **reviewed** files from the prepared `qiyu-server/` directory into the clone, without overwriting `LICENSE`, `README.md`, `.gitignore` or `docs/` unless you intentionally reconciled them.
-3. Use the **Changes** view to ensure no `site.pak`, `node_modules`, `.env`, `var/state.json`, `admin-password.txt`, keys, or binaries appear.
-4. Commit, then **Push origin**.
+The original project package and the filtered source-only archive are available to the maintainer in the ChatGPT project conversation, **not** as public GitHub downloads. No GitHub Release has been published.
 
-## Command line alternative
+## Upload remaining reviewed source files
+
+If you have the necessary rights to redistribute additional files, use a local Git client and review each path before pushing:
 
 ```powershell
 git clone https://github.com/skyjokersun/NewFancyWorld.git
 cd NewFancyWorld
-# Copy only reviewed source files into this directory.
+# Copy reviewed files into this working tree.
 git status
-git add .
+git add -- <reviewed-paths>
 git diff --cached --stat
-git commit -m "Add reviewed Qiyu V15.2 sources"
+git commit -m "Add additional reviewed V15.2 source"
 git push origin main
 ```
 
-### Windows EXE
+Never add `var/state.json`, administrator passwords, keys, tokens, `node_modules/` or private player records.
 
-After confirming asset rights, create GitHub Release tag `v15.2` with target `main`, copy notes from [RELEASE-v15.2.md](RELEASE-v15.2.md), and attach `SSS-Qiyu-V15.2-Win64.exe` plus `SHA256SUMS.txt`. Do not commit the binary to Git.
+## Windows EXE
 
-**Important:** A public GitHub repo is not an always-on game server.
+After verifying redistribution rights for bundled resources, create GitHub Release tag `v15.2` and attach the Windows EXE **to that Release only**. Do not add it to the Git repository history. See [release notes](RELEASE-v15.2.md) and [rights review](ASSET-AND-LICENSE-REVIEW.md).
+
+GitHub hosts code and release downloads; it does not keep a Node.js game server continuously running.
