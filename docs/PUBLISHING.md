@@ -10,7 +10,7 @@ As of November 2026, **130 reviewed source and support files have been committed
 - The Windows EXE, because it includes archived game resources.
 - Five auxiliary development tools: `tools/build-named-index.js`, `tools/catalog-lib.js`, `tools/pack-site.js`, `tools/site-files.js`, `tools/sysload.js`.
 
-The original project package and the filtered source-only archive are available to the maintainer in the ChatGPT project conversation, **not** as public GitHub downloads. No GitHub Release has been published.
+The original full project package and filtered original source-only archive are available to the maintainer in the ChatGPT project conversation. A GitHub Actions workflow is configured to publish the reviewed repository snapshot as a **source-only** `v15.2` prerelease; see the [Releases page](https://github.com/skyjokersun/NewFancyWorld/releases) for actual status. The automatically generated GitHub source ZIP/TAR archives will contain only the source present in the tagged commit.
 
 ## Upload remaining reviewed source files
 
@@ -31,6 +31,6 @@ Never add `var/state.json`, administrator passwords, keys, tokens, `node_modules
 
 ## Windows EXE
 
-After verifying redistribution rights for bundled resources, create GitHub Release tag `v15.2` and attach the Windows EXE **to that Release only**. Do not add it to the Git repository history. See [release notes](RELEASE-v15.2.md) and [rights review](ASSET-AND-LICENSE-REVIEW.md).
+Only after verifying redistribution rights for all bundled resources may a Windows EXE be attached to the GitHub Release. **No EXE is included in the source-only prerelease.** Do not add it to the Git repository history. See [release notes](RELEASE-v15.2.md) and [rights review](ASSET-AND-LICENSE-REVIEW.md).
 
 GitHub hosts code and release downloads; it does not keep a Node.js game server continuously running.
