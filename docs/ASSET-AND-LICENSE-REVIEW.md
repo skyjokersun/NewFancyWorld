@@ -1,5 +1,7 @@
 # Asset, IP and privacy checklist / 素材及版权检查
 
+Original server code authored and owned by SSS is released under the MIT License (see `../LICENSE`). The MIT grant does **not** include original game content, other parties' rights, or material not owned by SSS.
+
 Before making code, binaries, or game data publicly downloadable:
 
 - [ ] Verify authorization to redistribute the original game's `site.pak` (about 189 MiB) and its contents.
